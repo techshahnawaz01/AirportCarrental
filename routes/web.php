@@ -75,6 +75,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // Site configuration (administrators only)
         Route::middleware('can:manage-site')->group(function () {
+            Route::post('settings/integrations/test', [Admin\SettingController::class, 'testIntegrations'])
+                ->middleware('throttle:6,1')->name('settings.integrations.test');
             Route::get('settings/{group?}', [Admin\SettingController::class, 'edit'])->name('settings.edit');
             Route::put('settings/{group}', [Admin\SettingController::class, 'update'])->name('settings.update');
             Route::delete('settings/image/{key}', [Admin\SettingController::class, 'destroyImage'])

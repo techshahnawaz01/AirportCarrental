@@ -14,7 +14,7 @@ class WaitTimesService
 {
     public function forAirport(?string $iata): ?array
     {
-        $key = config('cms.integrations.tsa_wait_times.key');
+        $key = settings()->secret('integrations.tsa_api_key');
         $iata = strtoupper((string) $iata);
 
         if (! $key || strlen($iata) !== 3) {

@@ -24,6 +24,28 @@
     @case('code')
         <x-ui.textarea :name="$name" :label="$field['label']" :value="$value" :help="$field['help'] ?? null" :rows="$field['type'] === 'code' ? 6 : 3" @class(['font-mono text-xs' => $field['type'] === 'code']) />
         @break
+    @case('secret')
+        @php($saved = settings()->hasStoredSecret($fullKey))
+        @php($fromEnv = ! $saved && filled(settings()->secret($fullKey)))
+        <x-ui.field :label="$field['label']" :for="'f-'.$key" :name="$name" :help="$field['help'] ?? null">
+            <div class="flex items-center gap-2">
+                <input type="password" id="f-{{ $key }}" name="{{ $name }}" class="form-control font-mono" autocomplete="off" spellcheck="false"
+                       placeholder="{{ $saved ? '•••••••• saved — type to replace' : ($fromEnv ? 'Using the value from .env — type to override' : 'Paste your API key') }}">
+                @if ($saved)
+                    <x-ui.badge tone="success" class="shrink-0"><x-icon name="lock" class="size-3.5" /> Saved</x-ui.badge>
+                @elseif ($fromEnv)
+                    <x-ui.badge tone="primary" class="shrink-0">.env</x-ui.badge>
+                @else
+                    <x-ui.badge class="shrink-0">Not set</x-ui.badge>
+                @endif
+            </div>
+            @if ($saved)
+                <label class="mt-2 inline-flex items-center gap-2 text-xs text-fg-muted">
+                    <input type="checkbox" name="clear[{{ $key }}]" value="1" class="form-check"> Remove the saved key
+                </label>
+            @endif
+        </x-ui.field>
+        @break
     @case('toggle')
         <x-ui.toggle :name="$name" :label="$field['label']" :checked="filter_var($value, FILTER_VALIDATE_BOOLEAN)" :help="$field['help'] ?? null" />
         @break

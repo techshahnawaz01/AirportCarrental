@@ -140,7 +140,7 @@ class FlightDataService
 
     private function keys(): array
     {
-        return config('cms.integrations.aviationstack.keys', []);
+        return array_values(array_filter(array_map('trim', explode(',', (string) $this->settings->secret('integrations.aviationstack_keys')))));
     }
 
     /**

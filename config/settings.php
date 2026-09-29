@@ -90,8 +90,10 @@ return [
 
     'integrations' => [
         'label' => 'Integrations',
-        'description' => 'API keys are configured in the .env file. These options control how the data is used.',
+        'description' => 'Live data widgets. API keys are stored encrypted; values in .env are used as a fallback.',
         'fields' => [
+            'tsa_api_key' => ['label' => 'TSA wait times API key', 'type' => 'secret', 'help' => 'From tsawaittimes.com. Powers the [wait_times] block.', 'rules' => 'nullable|string|max:200|regex:/^[A-Za-z0-9_\\-]+$/', 'fallback' => 'cms.integrations.tsa_wait_times.key'],
+            'aviationstack_keys' => ['label' => 'Aviationstack API keys', 'type' => 'secret', 'help' => 'One or more keys separated by commas. They are rotated automatically when one reaches its monthly limit.', 'rules' => 'nullable|string|max:5000|regex:/^[A-Za-z0-9,\\s]+$/', 'fallback' => 'cms.integrations.aviationstack.keys'],
             'airport_iata' => ['label' => 'Airport IATA code', 'type' => 'text', 'help' => 'Used by the flight board, disruptions and TSA wait-time widgets.', 'rules' => 'nullable|alpha|size:3', 'default' => ''],
             'airport_name' => ['label' => 'Airport name', 'type' => 'text', 'rules' => 'nullable|string|max:120', 'default' => ''],
             'arrivals_page_id' => ['label' => 'Arrivals page', 'type' => 'page', 'rules' => 'nullable|integer|exists:pages,id', 'default' => null],

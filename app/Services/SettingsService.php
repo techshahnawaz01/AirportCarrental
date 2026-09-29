@@ -3,8 +3,10 @@
 namespace App\Services;
 
 use App\Models\Setting;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Storage;
 use Throwable;
 
@@ -39,6 +41,34 @@ class SettingsService
         $value = $this->all()[$key] ?? null;
 
         return ($value === null || $value === '') ? $default : $value;
+    }
+
+    /**
+     * Decrypted value of a "secret" setting, falling back to the config/.env value
+     * named in the schema ('fallback' => 'config.key').
+     */
+    public function secret(string $key): mixed
+    {
+        $stored = $this->get($key);
+
+        if ($stored) {
+            try {
+                return Crypt::decryptString($stored);
+            } catch (DecryptException) {
+                // APP_KEY changed or value corrupted: behave as if unset.
+            }
+        }
+
+        [$group, $field] = explode('.', $key, 2);
+        $fallback = $this->schema()[$group]['fields'][$field]['fallback'] ?? null;
+        $value = $fallback ? config($fallback) : null;
+
+        return is_array($value) ? implode(',', $value) : $value;
+    }
+
+    public function hasStoredSecret(string $key): bool
+    {
+        return filled($this->get($key));
     }
 
     public function bool(string $key): bool

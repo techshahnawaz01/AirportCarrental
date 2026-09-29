@@ -22,7 +22,7 @@
             <x-ui.card :title="$definition['label']" :description="$definition['description'] ?? null">
                 <div @class(['grid gap-6', 'sm:grid-cols-2' => ! in_array($group, ['general', 'contact'])])>
                     @foreach ($definition['fields'] as $key => $field)
-                        <div @class(['sm:col-span-2' => in_array($field['type'], ['textarea', 'code', 'toggle'])])>
+                        <div @class(['sm:col-span-2' => in_array($field['type'], ['textarea', 'code', 'toggle', 'secret'])])>
                             @include('admin.settings._field')
                         </div>
                     @endforeach
@@ -38,7 +38,13 @@
                         <p class="form-help">Save to update the preview and the live website.</p>
                     </div>
                 @endif
-                <div class="mt-6 flex justify-end border-t border-line pt-5">
+                <div class="mt-6 flex flex-col-reverse gap-2 border-t border-line pt-5 sm:flex-row sm:justify-end">
+                    @if ($group === 'integrations')
+                        <button type="button" class="btn btn-secondary" data-action="{{ route('admin.settings.integrations.test') }}" data-method="POST"
+                                data-confirm="This fetches fresh wait times and flight data now (flight refreshes use your Aviationstack quota). Save any changes first." data-confirm-title="Test & refresh live data?" data-confirm-button="Test now" data-tone="primary">
+                            <x-icon name="refresh" class="size-4" /> Test &amp; refresh data
+                        </button>
+                    @endif
                     <button class="btn btn-primary" data-loading-text="Saving…"><x-icon name="check" class="size-4" /> Save {{ strtolower($definition['label']) }}</button>
                 </div>
             </x-ui.card>
