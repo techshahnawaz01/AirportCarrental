@@ -18,7 +18,7 @@ class SitemapXmlTest extends TestCase
         Page::create(['title' => 'Map', 'slug' => 'map', 'is_active' => true]);
 
         $xml = simplexml_load_string($this->get('/sitemap.xml')->assertOk()->getContent());
-        $urls = collect($xml->url)->mapWithKeys(fn ($url) => [(string) $url->loc => (string) $url->lastmod]);
+        $urls = collect(iterator_to_array($xml->url, false))->mapWithKeys(fn ($url) => [(string) $url->loc => (string) $url->lastmod]);
 
         $this->assertCount(2, $urls);
         $this->assertSame('2025-11-25T08:30:00+00:00', $urls[url('/parking')]);
