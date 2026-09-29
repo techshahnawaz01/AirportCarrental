@@ -75,8 +75,11 @@ class PageController extends Controller
         }
 
         if (in_array($view, ['frontend.templates.post', 'frontend.templates.default'], true)) {
+            // Only suggest pages that have an image and are meant to be found (skips legal/utility pages).
             $data['related'] = Page::published()->with('featuredImage')
                 ->where('id', '!=', $page->id)
+                ->whereNotNull('featured_image_id')
+                ->where('noindex', false)
                 ->when($page->parent_id, fn ($q) => $q->where('parent_id', $page->parent_id), fn ($q) => $q->where('type', $page->type)->whereNull('parent_id'))
                 ->latest('published_at')->latest('id')->limit(5)->get();
         }
