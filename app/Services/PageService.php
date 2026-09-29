@@ -39,6 +39,7 @@ class PageService
 
             $page->fill(Arr::except($data, ['faqs']))->save();
             $this->syncFaqs($page, $data['faqs'] ?? []);
+            $page->touch(); // FAQ-only edits still update the modified date (sitemap lastmod).
 
             $this->activity->log($isNew ? 'created' : 'updated', ($isNew ? 'Created ' : 'Updated ').strtolower($page->typeLabel()).' "'.$page->title.'"', $page);
 

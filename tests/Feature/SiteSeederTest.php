@@ -34,7 +34,7 @@ class SiteSeederTest extends TestCase
 
     public function test_seo_endpoints(): void
     {
-        $this->get('/sitemap.xml')->assertOk()->assertHeader('Content-Type', 'application/xml; charset=UTF-8')->assertSee('<loc>'.url('/').'</loc>', false);
+        $this->get('/sitemap.xml')->assertOk()->assertHeader('Content-Type', 'application/xml; charset=UTF-8')->assertSee('<loc>'.url('/').'/</loc>', false);
         $this->get('/robots.txt')->assertOk()->assertSee('Sitemap: '.url('/sitemap.xml'));
         $this->get('/transportation')->assertSee('<link rel="canonical" href="'.url('/transportation').'">', false)
             ->assertSee('property="og:title"', false)

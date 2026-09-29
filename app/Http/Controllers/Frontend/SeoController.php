@@ -13,7 +13,10 @@ class SeoController extends Controller
 {
     public function sitemap(): Response
     {
-        $pages = $this->indexablePages(['id', 'path', 'type', 'updated_at', 'sitemap_priority']);
+        $homeId = (int) settings('general.home_page_id');
+        $pages = $this->indexablePages(['id', 'path', 'type', 'created_at', 'updated_at', 'published_at', 'sitemap_priority'])
+            ->sortBy(fn ($page) => $page->id === $homeId ? '' : $page->path)
+            ->values();
 
         return response()
             ->view('frontend.seo.sitemap', ['pages' => $pages], 200)

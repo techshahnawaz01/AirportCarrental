@@ -197,6 +197,11 @@ class ImportSitemap extends Command
         foreach ($faqs as $index => [$question, $answer]) {
             $page->faqs()->create(['question' => $question, 'answer' => $answer, 'sort_order' => $index]);
         }
+
+        // Keep the original site's modified date so the new sitemap reports real <lastmod> values.
+        if ($lastmod) {
+            Page::withoutTimestamps(fn () => $page->forceFill(['updated_at' => Carbon::parse($lastmod)])->saveQuietly());
+        }
     }
 
     private function ensureParent(string $path): Page

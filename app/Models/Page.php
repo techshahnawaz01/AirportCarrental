@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
@@ -122,7 +123,16 @@ class Page extends Model
 
     public function url(): string
     {
-        return $this->isHome() ? url('/') : url($this->path);
+        // Root URL keeps its trailing slash (https://example.com/), the canonical form for a home page.
+        return $this->isHome() ? url('/').'/' : url($this->path);
+    }
+
+    /**
+     * Last content change, used for sitemap <lastmod>. Never empty.
+     */
+    public function lastModified(): Carbon
+    {
+        return $this->updated_at ?? $this->published_at ?? $this->created_at ?? now();
     }
 
     public function isPublished(): bool
