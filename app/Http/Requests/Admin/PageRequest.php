@@ -106,7 +106,7 @@ class PageRequest extends FormRequest
                     : 'This URL is already used by "'.$conflict->title.'".');
             }
 
-            if (in_array($path, ['admin', 'search', 'widgets', 'storage', 'build', 'enquiries', 'subscribe', 'sitemap.xml', 'robots.txt', 'up'], true)) {
+            if (in_array($path, ['admin', 'search', 'widgets', 'storage', 'build', 'enquiries', 'subscribe', 'sitemap', 'sitemap.xml', 'robots.txt', 'up'], true)) {
                 $validator->errors()->add('slug', 'This URL is reserved by the system.');
             }
         }];

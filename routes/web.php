@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [Frontend\PageController::class, 'home'])->name('home');
 Route::get('/search', Frontend\SearchController::class)->middleware('throttle:search')->name('search');
 Route::get('/sitemap.xml', [Frontend\SeoController::class, 'sitemap'])->name('sitemap');
+Route::get('/sitemap', [Frontend\SeoController::class, 'sitemapPage'])->name('sitemap.page');
 Route::get('/robots.txt', [Frontend\SeoController::class, 'robots'])->name('robots');
 
 Route::middleware('throttle:forms')->group(function () {

@@ -53,7 +53,8 @@ images all live in the database and are managed from the admin panel. A new webs
 - FAQ accordions with FAQPage structured data, moderated comments with star ratings, AJAX contact form with honeypot and rate limiting.
 - Branded error pages (403, 404, 419, 422, 429, 500, 503).
 - SEO: per-page meta title/description/keywords, canonical URL, Open Graph, Twitter cards, robots meta, JSON-LD
-  (WebSite, Article, Hotel, BreadcrumbList, FAQPage), dynamic `sitemap.xml` and `robots.txt`, 301/302 redirect manager.
+  (WebSite, Article, Hotel, BreadcrumbList, FAQPage), dynamic `sitemap.xml` for search engines, a designed HTML sitemap at
+  `/sitemap` (pages grouped by section with instant search), `robots.txt`, 301/302 redirect manager.
 - Theme colours are CSS variables driven by admin settings — change the primary colour and the whole site follows.
 
 **Admin panel** (`/admin`)

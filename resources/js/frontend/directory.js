@@ -13,10 +13,13 @@ export function initDirectories() {
 
         input.addEventListener('input', () => {
             const terms = input.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+            const matches = (text = '') => terms.every((term) => text.includes(term));
+            // A group whose own name matches (data-group-search) shows all of its items.
+            const wholeGroups = new Set(groups.filter((g) => g.dataset.groupSearch && terms.length && matches(g.dataset.groupSearch)));
             let shown = 0;
 
             items.forEach((item) => {
-                const match = terms.every((term) => item.dataset.search.includes(term));
+                const match = wholeGroups.has(item.closest('[data-directory-group]')) || matches(item.dataset.search);
                 item.hidden = !match;
                 shown += match ? 1 : 0;
             });

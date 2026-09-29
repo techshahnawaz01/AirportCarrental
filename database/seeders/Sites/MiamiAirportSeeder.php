@@ -295,7 +295,7 @@ HTML,
             ['label' => 'Privacy Policy', 'page' => 'privacy-policy'],
             ['label' => 'Disclaimer', 'page' => 'disclaimer'],
             ['label' => 'Contact', 'page' => 'contact-us'],
-            ['label' => 'Sitemap', 'url' => '/sitemap.xml'],
+            ['label' => 'Sitemap', 'url' => '/sitemap'],
         ]);
 
         $this->menu('quick_links', [
