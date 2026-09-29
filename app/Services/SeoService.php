@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Page;
+use App\Support\FaqRegistry;
 use Illuminate\Support\Str;
 
 /**
@@ -55,6 +56,35 @@ class SeoService
         ];
     }
 
+    /**
+     * Adds one FAQPage node built from every FAQ rendered on this request.
+     * Called while the layout head renders, i.e. after the page body.
+     */
+    public function withRenderedFaqs(array $schema): array
+    {
+        $faqs = app(FaqRegistry::class)->all();
+
+        if ($faqs->isEmpty()) {
+            return $schema;
+        }
+
+        $schema['@context'] ??= 'https://schema.org';
+        $schema['@graph'] ??= [];
+        $schema['@graph'][] = [
+            '@type' => 'FAQPage',
+            'mainEntity' => $faqs->map(fn ($faq) => [
+                '@type' => 'Question',
+                'name' => $faq['question'],
+                'acceptedAnswer' => [
+                    '@type' => 'Answer',
+                    'text' => trim(preg_replace('/\s+/u', ' ', html_entity_decode(strip_tags(str_ireplace(['<br>', '<br/>', '<br />', '</p>'], [' ', ' ', ' ', ' '], $faq['answer'])), ENT_QUOTES | ENT_HTML5))),
+                ],
+            ])->values()->all(),
+        ];
+
+        return $schema;
+    }
+
     private function schema(Page $page, string $url, ?string $image): array
     {
         $siteName = $this->settings->get('branding.site_name');
@@ -104,17 +134,6 @@ class SeoService
                     'position' => $i + 1,
                     'name' => $crumb ? $crumb->title : 'Home',
                     'item' => $crumb ? $crumb->url() : url('/'),
-                ])->all(),
-            ];
-        }
-
-        if ($page->relationLoaded('faqs') && $page->faqs->isNotEmpty()) {
-            $graph[] = [
-                '@type' => 'FAQPage',
-                'mainEntity' => $page->faqs->map(fn ($faq) => [
-                    '@type' => 'Question',
-                    'name' => $faq->question,
-                    'acceptedAnswer' => ['@type' => 'Answer', 'text' => strip_tags($faq->answer)],
                 ])->all(),
             ];
         }

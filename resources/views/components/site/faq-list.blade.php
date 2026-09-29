@@ -1,5 +1,6 @@
 @props(['faqs', 'title' => 'Frequently Asked Questions', 'subtitle' => null])
 @if ($faqs->isNotEmpty())
+    @php(app(\App\Support\FaqRegistry::class)->add($faqs))
     <section {{ $attributes->merge(['class' => 'mx-auto max-w-3xl']) }} aria-labelledby="faq-heading-{{ $faqs->first()->page_id }}">
         <div class="text-center">
             <h2 id="faq-heading-{{ $faqs->first()->page_id }}" class="text-2xl font-bold tracking-tight text-secondary sm:text-3xl">{{ $title }}</h2>

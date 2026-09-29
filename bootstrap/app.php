@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\ApplySiteLocale;
 use App\Http\Middleware\EnsureUserIsActive;
+use App\Http\Middleware\ResetRenderState;
 use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
@@ -24,7 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->web(append: [SecurityHeaders::class, ApplySiteLocale::class]);
+        $middleware->web(prepend: [ResetRenderState::class], append: [SecurityHeaders::class, ApplySiteLocale::class]);
         $middleware->alias(['active' => EnsureUserIsActive::class]);
         $middleware->redirectGuestsTo(fn () => route('admin.login'));
         $middleware->redirectUsersTo(fn () => route('admin.dashboard'));

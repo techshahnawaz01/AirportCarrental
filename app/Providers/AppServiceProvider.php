@@ -8,6 +8,7 @@ use App\Models\Page;
 use App\Models\User;
 use App\Services\MenuService;
 use App\Services\SettingsService;
+use App\Support\FaqRegistry;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -23,6 +24,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->singleton(SettingsService::class);
         $this->app->singleton(MenuService::class);
+        $this->app->scoped(FaqRegistry::class);
     }
 
     public function boot(): void

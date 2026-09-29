@@ -1,5 +1,10 @@
 @props(['seo' => []])
-@php $seo = array_merge(app(\App\Services\SeoService::class)->forPage(null), $seo ?? []); @endphp
+@php
+    $seoService = app(\App\Services\SeoService::class);
+    $seo = array_merge($seoService->forPage(null), $seo ?? []);
+    // FAQs rendered anywhere in the page body (page FAQs, [faqs] blocks) become one FAQPage node.
+    $seo['schema'] = $seoService->withRenderedFaqs($seo['schema'] ?? []);
+@endphp
 <title>{{ $seo['title'] }}</title>
 @if ($seo['description'])<meta name="description" content="{{ $seo['description'] }}">@endif
 @if ($seo['keywords'])<meta name="keywords" content="{{ $seo['keywords'] }}">@endif

@@ -72,5 +72,9 @@
         @if (trim(strip_tags($content, '<img><iframe>')))
             <div class="content-prose mx-auto mt-16 max-w-4xl border-t border-line pt-12">{!! $content !!}</div>
         @endif
+
+        @if ($page->faqs->isNotEmpty())
+            <x-site.faq-list :faqs="$page->faqs" class="mt-16" />
+        @endif
     </div>
 @endsection
