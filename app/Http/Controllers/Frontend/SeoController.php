@@ -24,6 +24,19 @@ class SeoController extends Controller
     }
 
     /**
+     * CSS that makes sitemap.xml readable in browsers. Search engines ignore it,
+     * so the XML stays a standard sitemap. (CSS is used instead of XSLT, which
+     * browsers are removing.)
+     */
+    public function sitemapStyles(): Response
+    {
+        return response()
+            ->view('frontend.seo.sitemap-css', [], 200)
+            ->header('Content-Type', 'text/css; charset=UTF-8')
+            ->header('Cache-Control', 'public, max-age=3600');
+    }
+
+    /**
      * Human-friendly sitemap: pages grouped by top-level section.
      */
     public function sitemapPage(SeoService $seo): View

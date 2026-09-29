@@ -49,4 +49,10 @@ class SitemapXmlTest extends TestCase
         $this->assertSame(url('/').'/', (string) $xml->url[0]->loc);
         $this->assertSame('1.0', (string) $xml->url[0]->priority);
     }
+
+    public function test_sitemap_links_a_css_stylesheet_for_browsers(): void
+    {
+        $this->get('/sitemap.xml')->assertSee('<?xml-stylesheet type="text/css" href="'.route('sitemap.css').'"?>', false);
+        $this->get('/sitemap.css')->assertOk()->assertHeader('Content-Type', 'text/css; charset=UTF-8')->assertSee('lastmod::before', false);
+    }
 }
