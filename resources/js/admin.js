@@ -52,6 +52,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (url) document.querySelectorAll('[data-view-link]').forEach((a) => (a.href = url));
     });
 
+    // Page form: show the extra fields for the chosen template.
+    document.querySelectorAll('[data-template-select]').forEach((select) => {
+        const sync = () => document.querySelectorAll('[data-template-section]').forEach((section) => (section.hidden = section.dataset.templateSection !== select.value));
+        select.addEventListener('change', sync);
+    });
+
     // Colour inputs: keep the swatch and the hex text field in sync.
     document.addEventListener('input', (event) => {
         const field = event.target.closest('[data-color-field]');

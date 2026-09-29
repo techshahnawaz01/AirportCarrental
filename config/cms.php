@@ -66,8 +66,12 @@ return [
     'templates' => [
         'default' => 'Standard page (content + sidebar)',
         'full-width' => 'Full width',
+        'guide' => 'Guide (table of contents + reading progress)',
+        'landing' => 'Landing page (hero with call-to-action buttons)',
         'home' => 'Home page',
         'listing' => 'Listing (shows child pages)',
+        'directory' => 'Directory (searchable A–Z list of child pages)',
+        'magazine' => 'Magazine (featured story + article grid)',
         'post' => 'Blog post',
         'hotel' => 'Hotel detail',
         'contact' => 'Contact page',

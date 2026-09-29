@@ -34,7 +34,21 @@ images all live in the database and are managed from the admin panel. A new webs
 
 **Front end**
 - Mobile-first Tailwind UI: sticky header with dropdowns, mobile drawer, live search suggestions, footer with newsletter sign-up.
-- Page templates: standard (content + sidebar), full width, home, listing (child pages), blog post, hotel detail, contact.
+- Page templates (chosen per page in the admin):
+
+  | Template | Best for |
+  | --- | --- |
+  | Standard | Most content pages — content with a help/related sidebar |
+  | Full width | Tools and wide content (flight boards, legal pages) |
+  | Guide | Long articles — sticky table of contents built from H2/H3 headings, reading progress bar, read time |
+  | Landing | Campaign/service pages — centred hero with eyebrow and two configurable CTA buttons, block-based sections |
+  | Home | The home page — hero with live search |
+  | Listing | Section index pages — paginated card grid of child pages |
+  | Directory | Long lists (airlines, car rental) — A–Z groups with instant search and letter jump links |
+  | Magazine | Blog index — large featured latest story, article grid, search |
+  | Blog post | Articles with date, read time, FAQs and comments |
+  | Hotel detail | Gallery, location & map, rooms with amenities |
+  | Contact | Contact details from Settings, enquiry form, map |
 - Hierarchical URLs (`/transportation/airport-to-miami-beach`), drafts with staff-only preview, scheduled publishing.
 - FAQ accordions with FAQPage structured data, moderated comments with star ratings, AJAX contact form with honeypot and rate limiting.
 - Branded error pages (403, 404, 419, 422, 429, 500, 503).
@@ -301,7 +315,8 @@ Image paths are shown in the media library's details dialog. Add your own block 
 4. Or skip step 2 entirely: seed with an empty site seeder and configure everything in the admin
    (Settings → Branding/Theme/Contact/Social, Pages, Navigation, SEO).
 5. Need different content types, templates or menu locations? Edit `config/cms.php` and add a Blade template in
-   `resources/views/frontend/templates/`. Optional integrations (flights, TSA) stay dormant if their keys are empty.
+   `resources/views/frontend/templates/` (the key in `cms.templates` is the view name). Template-specific admin fields
+   go in a `resources/views/admin/pages/_<name>-fields.blade.php` partial wrapped in `data-template-section="<name>"`. Optional integrations (flights, TSA) stay dormant if their keys are empty.
 
 No controller, service or component needs to change.
 

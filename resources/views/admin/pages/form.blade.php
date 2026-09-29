@@ -41,9 +41,13 @@
                     </x-ui.field>
                 </x-ui.card>
 
-                @if ($page->type === 'hotel' || $page->template === 'hotel')
+                {{-- Template-specific fields: shown/hidden instantly when the template changes. --}}
+                <div data-template-section="landing" @unless (old('template', $page->template) === 'landing') hidden @endunless>
+                    @include('admin.pages._landing-fields')
+                </div>
+                <div data-template-section="hotel" @unless (old('template', $page->template) === 'hotel') hidden @endunless>
                     @include('admin.pages._hotel-fields')
-                @endif
+                </div>
 
                 <x-ui.card title="FAQs" description="Shown as an accordion and added to search results as FAQ structured data.">
                     <div data-repeater="faqs">
@@ -85,7 +89,7 @@
 
                 <x-ui.card title="Page attributes">
                     <div class="space-y-5">
-                        <x-ui.select name="template" label="Template" :options="$templates" :value="$page->template" required help="Changing to Hotel shows hotel fields after saving." />
+                        <x-ui.select name="template" label="Template" :options="$templates" :value="$page->template" required help="Controls the page layout. Some templates add extra fields." data-template-select />
                         <x-ui.field label="Parent" for="f-parent-id" name="parent_id" help="Nest this page under another to build its URL.">
                             <select id="f-parent-id" name="parent_id" class="form-control">
                                 <option value="" data-path="">— None (top level) —</option>

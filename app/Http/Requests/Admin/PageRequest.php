@@ -65,6 +65,12 @@ class PageRequest extends FormRequest
             'data.notice' => ['nullable', 'string', 'max:1000'],
             'data.gallery' => ['nullable', 'array', 'max:40'],
             'data.gallery.*' => ['integer', 'exists:media,id'],
+            'data.hero' => ['nullable', 'array'],
+            'data.hero.eyebrow' => ['nullable', 'string', 'max:80'],
+            'data.hero.primary_label' => ['nullable', 'required_with:data.hero.primary_url', 'string', 'max:60'],
+            'data.hero.primary_url' => ['nullable', 'required_with:data.hero.primary_label', 'string', 'max:500', 'regex:/^(\/|#|https?:\/\/|tel:|mailto:)/i'],
+            'data.hero.secondary_label' => ['nullable', 'required_with:data.hero.secondary_url', 'string', 'max:60'],
+            'data.hero.secondary_url' => ['nullable', 'required_with:data.hero.secondary_label', 'string', 'max:500', 'regex:/^(\/|#|https?:\/\/|tel:|mailto:)/i'],
             'data.rooms' => ['nullable', 'array', 'max:30'],
             'data.rooms.*.title' => ['nullable', 'string', 'max:255'],
             'data.rooms.*.description' => ['nullable', 'string', 'max:2000'],
@@ -113,6 +119,10 @@ class PageRequest extends FormRequest
             'faqs.*.answer' => 'answer',
             'data.rooms.*.title' => 'room title',
             'data.map_embed_url' => 'map embed URL',
+            'data.hero.primary_label' => 'primary button label',
+            'data.hero.primary_url' => 'primary button link',
+            'data.hero.secondary_label' => 'secondary button label',
+            'data.hero.secondary_url' => 'secondary button link',
         ];
     }
 }

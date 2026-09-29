@@ -165,7 +165,7 @@ HTML,
         $this->page([
             'slug' => 'blog',
             'title' => 'Blog',
-            'template' => 'listing',
+            'template' => 'magazine',
             'excerpt' => 'Travel tips, airport guides and Miami inspiration.',
             'content' => '',
         ]);

@@ -77,7 +77,17 @@ class PageService
      */
     private function templateData(string $template, array $input, array $existing): ?array
     {
-        $data = Arr::except($existing, ['address', 'location_title', 'location_description', 'map_embed_url', 'gallery', 'rooms', 'notice']);
+        $data = Arr::except($existing, ['address', 'location_title', 'location_description', 'map_embed_url', 'gallery', 'rooms', 'notice', 'hero']);
+
+        if ($template === 'landing') {
+            $data['hero'] = array_filter([
+                'eyebrow' => trim((string) ($input['hero']['eyebrow'] ?? '')),
+                'primary_label' => trim((string) ($input['hero']['primary_label'] ?? '')),
+                'primary_url' => trim((string) ($input['hero']['primary_url'] ?? '')),
+                'secondary_label' => trim((string) ($input['hero']['secondary_label'] ?? '')),
+                'secondary_url' => trim((string) ($input['hero']['secondary_url'] ?? '')),
+            ]);
+        }
 
         if ($template === 'hotel') {
             $data = array_merge($data, [

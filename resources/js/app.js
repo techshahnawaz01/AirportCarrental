@@ -7,6 +7,8 @@ import { initLiveSearch } from './frontend/live-search';
 import { initTabs } from './frontend/tabs';
 import { initFlightWidget, initFlightBoards, initDisruptions } from './frontend/flights';
 import { initGalleries } from './frontend/gallery';
+import { initGuide } from './frontend/guide';
+import { initDirectories } from './frontend/directory';
 
 document.addEventListener('DOMContentLoaded', () => {
     initAjaxForms();
@@ -19,5 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initFlightBoards();
     initDisruptions();
     initGalleries();
+    initGuide();
+    initDirectories();
     showFlashMessages();
 });

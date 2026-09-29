@@ -8,6 +8,7 @@ use App\Models\Page;
 use App\Models\Redirect;
 use App\Services\SeoService;
 use App\Services\ShortcodeRenderer;
+use App\Support\TableOfContents;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
@@ -68,13 +69,22 @@ class PageController extends Controller
 
         $view = $page->templateView();
 
-        if ($view === 'frontend.templates.listing') {
+        if (in_array($view, ['frontend.templates.listing', 'frontend.templates.magazine'], true)) {
             $data['children'] = $page->children()->published()->with('featuredImage')
                 ->orderBy('sort_order')->latest('published_at')->latest('id')
-                ->paginate(config('cms.pagination.frontend'))->withQueryString();
+                ->paginate(config('cms.pagination.frontend') + ($view === 'frontend.templates.magazine' ? 1 : 0))->withQueryString();
         }
 
-        if (in_array($view, ['frontend.templates.post', 'frontend.templates.default'], true)) {
+        if ($view === 'frontend.templates.directory') {
+            // Directories are short lists; load them all and filter instantly in the browser.
+            $data['children'] = $page->children()->published()->with('featuredImage')->orderBy('title')->limit(500)->get();
+        }
+
+        if ($view === 'frontend.templates.guide') {
+            [$data['content'], $data['toc']] = TableOfContents::build($data['content']);
+        }
+
+        if (in_array($view, ['frontend.templates.post', 'frontend.templates.default', 'frontend.templates.guide'], true)) {
             // Only suggest pages that have an image and are meant to be found (skips legal/utility pages).
             $data['related'] = Page::published()->with('featuredImage')
                 ->whereNotIn('id', array_filter([$page->id, (int) settings('general.home_page_id')]))
