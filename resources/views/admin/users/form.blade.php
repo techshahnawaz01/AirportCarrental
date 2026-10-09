@@ -4,7 +4,7 @@
 
 @section('content')
     <x-admin.page-header :title="$isNew ? 'New user' : 'Edit user'" />
-    <form method="POST" action="{{ $isNew ? route('admin.users.store') : route('admin.users.update', $user) }}" data-ajax-form class="max-w-2xl" autocomplete="off">
+    <form method="POST" action="{{ $isNew ? route('admin.users.store') : route('admin.users.update', $user) }}" enctype="multipart/form-data" data-ajax-form class="max-w-4xl space-y-6" autocomplete="off">
         @csrf
         @unless ($isNew) @method('PUT') @endunless
         <x-ui.form-alert />
@@ -17,6 +17,9 @@
                 <x-ui.input name="password" type="password" label="{{ $isNew ? 'Password' : 'New password' }}" :required="$isNew" autocomplete="new-password" :help="$isNew ? 'At least 8 characters with letters and numbers.' : 'Leave blank to keep the current password.'" />
                 <x-ui.input name="password_confirmation" type="password" label="Confirm password" :required="$isNew" autocomplete="new-password" />
             </div>
+        </x-ui.card>
+        <x-ui.card title="Author profile" description="Shown on this person's blog posts and on their author page.">
+            @include('admin.users._author-fields')
             <div class="mt-6 flex justify-end gap-2 border-t border-line pt-5">
                 <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">Cancel</a>
                 <button class="btn btn-primary" data-loading-text="Saving…">{{ $isNew ? 'Create user' : 'Save changes' }}</button>

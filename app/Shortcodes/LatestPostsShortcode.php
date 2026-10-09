@@ -12,7 +12,7 @@ class LatestPostsShortcode implements Shortcode
             ? Page::where('path', trim($attributes['parent'], '/'))->value('id')
             : settings('general.blog_page_id');
 
-        $posts = Page::published()->with('featuredImage')
+        $posts = Page::published()->with(['featuredImage', 'author.avatar'])
             ->when($parentId, fn ($q) => $q->where('parent_id', $parentId), fn ($q) => $q->where('type', 'post'))
             ->latest('published_at')->latest('id')
             ->limit(min((int) ($attributes['limit'] ?? 5), 12))

@@ -8,6 +8,7 @@ use App\Models\Page;
 use App\Models\Redirect;
 use App\Services\SeoService;
 use App\Services\ShortcodeRenderer;
+use App\Support\ContentTables;
 use App\Support\TableOfContents;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -58,11 +59,12 @@ class PageController extends Controller
 
     private function render(Request $request, Page $page): Response
     {
-        $page->load(['faqs', 'featuredImage', 'ogImage', 'parent.parent']);
+        $page->load(['faqs', 'featuredImage', 'ogImage', 'parent.parent', 'author.avatar']);
 
         $data = [
             'page' => $page,
-            'content' => $this->shortcodes->render($page->content, $page),
+            // Editor tables are wrapped before shortcodes run, so block output (flight boards etc.) is left alone.
+            'content' => $this->shortcodes->render(ContentTables::wrap($page->content), $page),
             'seo' => $this->seo->forPage($page, $request->query('page') > 1 ? ['noindex' => true] : []),
             'isPreview' => ! $page->isPublished(),
         ];
@@ -70,7 +72,7 @@ class PageController extends Controller
         $view = $page->templateView();
 
         if (in_array($view, ['frontend.templates.listing', 'frontend.templates.magazine'], true)) {
-            $data['children'] = $page->children()->published()->with('featuredImage')
+            $data['children'] = $page->children()->published()->with(['featuredImage', 'author.avatar'])
                 ->orderBy('sort_order')->latest('published_at')->latest('id')
                 ->paginate(config('cms.pagination.frontend') + ($view === 'frontend.templates.magazine' ? 1 : 0))->withQueryString();
         }

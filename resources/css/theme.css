@@ -1,0 +1,429 @@
+/*
+ * Shared design system for the public site (app.css) and the admin panel (admin.css):
+ * self-hosted fonts, brand tokens, base styles and component classes.
+ * Each entry file imports Tailwind and lists its own @source paths first.
+ */
+
+/* Self-hosted fonts (resources/fonts), latin subset only. Inter is one variable file covering every weight;
+   it and Poppins 700 are preloaded in the layouts. */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url('../fonts/inter-latin-wght-normal.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+    font-family: 'Poppins';
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url('../fonts/poppins-latin-600-normal.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+    font-family: 'Poppins';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('../fonts/poppins-latin-700-normal.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Brand colours come from Admin → Settings → Theme and are printed as
+ * --brand-* variables in the layout <head>. Fallbacks keep the UI usable
+ * before settings exist.
+ */
+@theme inline {
+    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+    --font-display: 'Poppins', 'Inter', ui-sans-serif, system-ui, sans-serif;
+
+    --color-primary: var(--brand-primary, #0c6dd4);
+    --color-primary-dark: color-mix(in oklab, var(--brand-primary, #0c6dd4) 78%, black);
+    --color-primary-light: color-mix(in oklab, var(--brand-primary, #0c6dd4) 78%, white);
+    --color-primary-soft: color-mix(in oklab, var(--brand-primary, #0c6dd4) 9%, white);
+    --color-secondary: var(--brand-secondary, #1a2332);
+    --color-accent: var(--brand-accent, #ff7203);
+    --color-accent-dark: color-mix(in oklab, var(--brand-accent, #ff7203) 82%, black);
+    --color-accent-soft: color-mix(in oklab, var(--brand-accent, #ff7203) 10%, white);
+    /* Readable text on accent backgrounds: dark for light accents (e.g. yellow), white otherwise. Set by SettingsService. */
+    --color-on-accent: var(--brand-on-accent, #ffffff);
+    /* Accent-coloured text on light backgrounds (labels, dates); much darker for light accents. */
+    --color-accent-ink: var(--brand-accent-ink, color-mix(in oklab, var(--brand-accent, #ff7203) 82%, black));
+    --color-button: var(--brand-button, var(--brand-primary, #0c6dd4));
+    --color-ink: var(--brand-text, #1a2332);
+    --color-page: var(--brand-background, #ffffff);
+    --color-soft: #f5f8fc;
+    --color-muted: #6b7c93;
+
+    /* Semantic surfaces (switch automatically in dark mode) */
+    --color-surface: var(--ui-surface);
+    --color-surface-muted: var(--ui-surface-muted);
+    --color-surface-raised: var(--ui-surface-raised);
+    --color-line: var(--ui-line);
+    --color-fg: var(--ui-fg);
+    --color-fg-muted: var(--ui-fg-muted);
+
+    --shadow-card: 0 1px 2px rgb(16 24 40 / 0.04), 0 4px 16px -4px rgb(16 24 40 / 0.08);
+    --shadow-card-hover: 0 2px 4px rgb(16 24 40 / 0.04), 0 18px 40px -12px rgb(16 24 40 / 0.18);
+    --shadow-float: 0 24px 60px -18px rgb(10 30 60 / 0.35);
+    --shadow-glow-accent: 0 8px 22px -6px color-mix(in oklab, var(--brand-accent, #ff7203) 55%, transparent);
+    --shadow-glow-primary: 0 8px 22px -6px color-mix(in oklab, var(--brand-primary, #0c6dd4) 50%, transparent);
+
+    --animate-float: float 7s ease-in-out infinite;
+    --animate-fade-up: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes float {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-14px);
+    }
+}
+@keyframes fade-up {
+    from {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+:root {
+    --ui-surface: #ffffff;
+    --ui-surface-muted: #f5f8fc;
+    --ui-surface-raised: #ffffff;
+    --ui-line: #e3e8ef;
+    --ui-fg: #1a2332;
+    --ui-fg-muted: #6b7c93;
+}
+
+.dark {
+    --ui-surface: #0f1623;
+    --ui-surface-muted: #0a0f18;
+    --ui-surface-raised: #151e2e;
+    --ui-line: #243044;
+    --ui-fg: #e6ebf2;
+    --ui-fg-muted: #93a1b5;
+    color-scheme: dark;
+}
+
+@layer base {
+    html {
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+        @apply antialiased;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    .font-display {
+        font-family: var(--font-display);
+    }
+
+    ::selection {
+        background: color-mix(in oklab, var(--color-primary) 22%, transparent);
+    }
+
+    [x-cloak],
+    [hidden] {
+        display: none !important;
+    }
+
+    :focus-visible {
+        outline: 2px solid var(--color-primary);
+        outline-offset: 2px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+            scroll-behavior: auto !important;
+        }
+    }
+}
+
+@layer components {
+    /* Buttons ---------------------------------------------------------- */
+    .btn {
+        @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition duration-200
+            focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60 whitespace-nowrap;
+    }
+    .btn-sm {
+        @apply rounded-lg px-3 py-1.5 text-xs;
+    }
+    .btn-lg {
+        @apply px-7 py-3.5 text-base;
+    }
+    .btn-primary {
+        @apply bg-button text-white shadow-glow-primary hover:-translate-y-px hover:brightness-110 active:translate-y-0 active:brightness-95;
+    }
+    .btn-accent {
+        @apply bg-gradient-to-br from-accent to-accent-dark text-on-accent shadow-glow-accent hover:-translate-y-px hover:brightness-110 active:translate-y-0;
+    }
+    .btn-white {
+        @apply bg-white text-secondary shadow-card hover:-translate-y-px hover:shadow-card-hover;
+    }
+    .btn-glass {
+        @apply bg-white/10 text-white ring-1 ring-white/30 hover:bg-white/20;
+    }
+    .btn-secondary {
+        @apply border border-line bg-surface text-fg shadow-sm hover:border-primary/30 hover:bg-surface-muted;
+    }
+    .btn-ghost {
+        @apply text-fg-muted hover:bg-surface-muted hover:text-fg;
+    }
+    .btn-danger {
+        @apply bg-red-600 text-white shadow-sm hover:bg-red-700;
+    }
+    .btn-icon {
+        @apply inline-flex size-10 items-center justify-center rounded-xl text-fg-muted transition hover:bg-surface-muted hover:text-fg;
+    }
+
+    /* Forms ------------------------------------------------------------ */
+    .form-label {
+        @apply mb-1.5 block text-sm font-semibold text-fg;
+    }
+    .form-control {
+        @apply block w-full rounded-xl border-line bg-surface px-3.5 py-2.5 text-sm text-fg shadow-sm transition placeholder:text-fg-muted/70
+            focus:border-primary focus:ring-4 focus:ring-primary/15;
+    }
+    .form-control[aria-invalid='true'] {
+        @apply border-red-500 focus:border-red-500 focus:ring-red-500/20;
+    }
+    .form-help {
+        @apply mt-1.5 text-xs text-fg-muted;
+    }
+    .form-error {
+        @apply mt-1.5 text-xs font-medium text-red-600;
+    }
+    .form-check {
+        @apply size-4 rounded border-line text-primary focus:ring-primary/30;
+    }
+
+    /* Cards / badges ---------------------------------------------------- */
+    .card {
+        @apply rounded-2xl border border-line bg-surface-raised shadow-sm;
+    }
+    .card-premium {
+        @apply rounded-3xl border border-line/80 bg-white shadow-card transition duration-300;
+    }
+    .card-hover {
+        @apply hover:-translate-y-1 hover:border-primary/20 hover:shadow-card-hover;
+    }
+    .icon-tile {
+        @apply flex size-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-soft to-white text-primary ring-1 ring-primary/10;
+    }
+    .badge {
+        @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap;
+    }
+    .badge-success {
+        @apply bg-emerald-500/10 text-emerald-700 dark:text-emerald-400;
+    }
+    .badge-warning {
+        @apply bg-amber-500/10 text-amber-700 dark:text-amber-400;
+    }
+    .badge-danger {
+        @apply bg-red-500/10 text-red-700 dark:text-red-400;
+    }
+    .badge-neutral {
+        @apply bg-slate-500/10 text-fg-muted;
+    }
+    .badge-primary {
+        @apply bg-primary/10 text-primary;
+    }
+    .badge-accent {
+        @apply bg-accent/15 text-accent-ink;
+    }
+
+    /* Tables ------------------------------------------------------------ */
+    .table {
+        @apply w-full text-left text-sm;
+    }
+    .table th {
+        @apply border-b border-line bg-surface-muted px-4 py-3 text-xs font-semibold tracking-wider whitespace-nowrap text-fg-muted uppercase;
+    }
+    .table td {
+        @apply border-b border-line px-4 py-3.5 align-middle text-fg;
+    }
+    .table tbody tr {
+        @apply transition-colors hover:bg-primary/[0.03];
+    }
+    .table tbody tr:last-child td {
+        @apply border-b-0;
+    }
+
+    /* Section headings ---------------------------------------------------- */
+    .eyebrow {
+        @apply inline-flex items-center gap-2 rounded-full bg-accent-soft px-3.5 py-1 text-xs font-bold tracking-wider text-accent-ink uppercase ring-1 ring-accent/20;
+    }
+    .eyebrow-light {
+        @apply inline-flex items-center gap-2 rounded-full bg-white/15 px-3.5 py-1.5 text-xs font-semibold tracking-wide text-white ring-1 ring-white/25;
+    }
+    .section-title {
+        @apply font-display text-2xl leading-tight font-bold tracking-tight text-balance text-secondary md:text-3xl lg:text-4xl;
+    }
+    .section-lead {
+        @apply mt-3 text-base leading-7 text-muted md:text-lg;
+    }
+
+    /* Hero backdrop: brand gradient over the photo, with soft glow blobs. */
+    .hero-overlay {
+        background: linear-gradient(
+            115deg,
+            color-mix(in oklab, var(--color-primary-dark) 94%, transparent) 0%,
+            color-mix(in oklab, var(--color-primary) 86%, transparent) 45%,
+            color-mix(in oklab, var(--color-primary-light) 55%, transparent) 100%
+        );
+    }
+    /* Soft glow: a radial mask instead of a blur filter, which is far cheaper to paint on phones. */
+    .hero-blob {
+        @apply pointer-events-none absolute rounded-full;
+        mask-image: radial-gradient(closest-side, #000 15%, transparent);
+    }
+
+    /* Header menus (repeated for every menu item, so kept short in the HTML) */
+    .nav-dropdown-link {
+        @apply flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-primary-soft hover:text-primary;
+    }
+    .nav-dropdown-link.is-current {
+        @apply bg-primary-soft font-semibold text-primary;
+    }
+    .nav-dropdown-icon {
+        @apply flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-primary transition group-hover/item:bg-primary group-hover/item:text-white;
+    }
+    .nav-mobile-link {
+        @apply flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-slate-600 transition hover:translate-x-1 hover:bg-primary-soft hover:text-primary;
+    }
+
+    .container-site {
+        @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+    }
+
+    /* Rich content from the editor -------------------------------------- */
+    .content-prose {
+        @apply prose max-w-none prose-slate prose-headings:scroll-mt-28 prose-headings:font-display prose-headings:font-bold prose-headings:tracking-tight
+            prose-headings:text-secondary prose-p:leading-8 prose-a:text-primary prose-a:font-semibold prose-a:no-underline hover:prose-a:underline
+            prose-strong:text-secondary prose-img:rounded-2xl prose-img:shadow-card prose-table:text-sm prose-th:bg-soft prose-th:px-3 prose-td:px-3
+            prose-blockquote:rounded-r-2xl prose-blockquote:border-l-accent prose-blockquote:bg-accent-soft/60 prose-blockquote:py-1 prose-blockquote:not-italic
+            prose-li:marker:text-primary;
+    }
+    .content-prose h2 {
+        @apply relative;
+    }
+    /* Editor tables are wrapped in .table-scroll (App\\Support\\ContentTables): the box scrolls, the table keeps real columns. */
+    .content-prose .table-scroll {
+        @apply my-8 overflow-x-auto rounded-2xl border border-line bg-white shadow-sm;
+        -webkit-overflow-scrolling: touch;
+    }
+    .content-prose .table-scroll table {
+        @apply my-0 w-full min-w-full;
+    }
+    /* Three or more columns never squeeze below a readable width; the box scrolls instead. */
+    .content-prose .table-scroll table:has(tr > :nth-child(3)) {
+        min-width: 34rem;
+    }
+    .content-prose .table-scroll :is(th, td) {
+        @apply px-3.5 py-2.5 align-top leading-6 sm:px-4 sm:py-3;
+    }
+    .content-prose .table-scroll :is(th, td) > :is(p, ul, ol) {
+        @apply my-0;
+    }
+    .content-prose .table-scroll tr:first-child :is(th, td) {
+        @apply bg-soft font-semibold text-secondary;
+    }
+    .content-prose .table-scroll tbody tr:nth-child(even):not(:first-child) {
+        @apply bg-soft/60;
+    }
+    .content-prose .table-scroll tr > :first-child {
+        @apply font-semibold text-secondary;
+    }
+    .content-prose iframe {
+        @apply aspect-video h-auto w-full rounded-2xl;
+    }
+
+    /* Rich text inside shortcode blocks (which opt out of .prose via not-prose). */
+    .rich-text {
+        @apply leading-7 text-slate-600;
+    }
+    .rich-text > * + * {
+        @apply mt-4;
+    }
+    .rich-text a {
+        @apply font-semibold text-primary underline-offset-2 hover:underline;
+    }
+    .rich-text ul {
+        @apply list-disc space-y-1 pl-5 marker:text-primary;
+    }
+    .rich-text ol {
+        @apply list-decimal space-y-1 pl-5 marker:text-primary;
+    }
+    .rich-text h2,
+    .rich-text h3 {
+        @apply font-display font-bold text-secondary;
+    }
+
+    .skeleton {
+        @apply animate-pulse rounded-lg bg-slate-200/70 dark:bg-slate-700/50;
+    }
+}
+
+/*
+ * Scroll reveal (see navigation.js): content is visible by default. Script hides only the
+ * [data-reveal] sections that start below the fold and fades them up as they scroll in,
+ * so nothing on the first screen ever waits for JavaScript.
+ */
+[data-reveal] {
+    transition:
+        opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+        transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+[data-reveal].reveal-pending {
+    opacity: 0;
+    transform: translateY(18px);
+}
+
+/* Spinner used by the loading state helper */
+.spinner {
+    width: 1em;
+    height: 1em;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 9999px;
+    animation: spin 0.7s linear infinite;
+}
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Native <details> accordions */
+details > summary {
+    list-style: none;
+}
+details > summary::-webkit-details-marker {
+    display: none;
+}
+details[open] .details-icon {
+    transform: rotate(45deg);
+    background-color: var(--color-primary);
+    color: #fff;
+}

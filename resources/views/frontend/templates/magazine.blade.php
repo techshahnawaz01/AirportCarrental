@@ -6,40 +6,47 @@
 @endphp
 
 @section('content')
-    <section class="border-b border-line bg-slate-50">
-        <div class="container-site py-12 sm:py-16">
-            <x-ui.breadcrumbs :items="$page->ancestors()->map(fn ($p) => ['label' => $p->title, 'url' => $p->url()])->push(['label' => $page->title])->all()" :home="url('/')" class="text-slate-500" />
+    <section class="relative isolate overflow-hidden border-b border-line bg-gradient-to-br from-primary-soft via-white to-accent-soft">
+        <div class="hero-blob -top-24 right-0 -z-10 size-96 bg-primary/10"></div>
+        <div class="container-site py-14 sm:py-20">
+            <x-ui.breadcrumbs :items="$page->breadcrumbs()" :home="url('/')" class="inline-flex rounded-full bg-white px-4 py-1.5 text-slate-500 shadow-sm ring-1 ring-line" />
             <div class="mt-4 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
                 <div>
-                    <h1 class="text-4xl font-extrabold tracking-tight text-secondary sm:text-5xl">{{ $page->title }}</h1>
-                    @if ($page->excerpt)<p class="mt-3 max-w-2xl text-lg text-slate-600">{{ $page->excerpt }}</p>@endif
+                    <h1 class="text-4xl font-bold tracking-tight text-secondary sm:text-5xl lg:text-6xl">{{ $page->title }}</h1>
+                    @if ($page->excerpt)<p class="mt-4 max-w-2xl text-lg text-muted">{{ $page->excerpt }}</p>@endif
                 </div>
-                <form action="{{ route('search') }}" role="search" class="relative w-full md:w-72">
+                <form action="{{ route('search') }}" role="search" class="relative w-full md:w-80">
                     <label for="magazine-search" class="sr-only">Search articles</label>
                     <x-icon name="search" class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-slate-400" />
-                    <input id="magazine-search" type="search" name="q" placeholder="Search articles…" class="form-control pl-9">
+                    <input id="magazine-search" type="search" name="q" placeholder="Search articles…" class="form-control py-3 pl-10 shadow-card">
                 </form>
             </div>
         </div>
     </section>
 
-    <div class="container-site py-12 lg:py-16">
+    <div class="container-site py-14 lg:py-20">
         @if ($children->isEmpty())
-            <x-ui.empty-state icon="newspaper" title="No articles yet" description="New stories will appear here soon." class="rounded-2xl border border-dashed border-line" />
+            <x-ui.empty-state icon="newspaper" title="No articles yet" description="New stories will appear here soon." class="rounded-3xl border-2 border-dashed border-line bg-soft" />
         @else
             @if ($featured)
-                <article class="group relative grid overflow-hidden rounded-3xl bg-secondary text-white shadow-lg lg:grid-cols-5">
+                <article class="group relative grid overflow-hidden rounded-[2rem] bg-secondary text-white shadow-float lg:grid-cols-5">
                     <div class="relative aspect-[16/10] overflow-hidden lg:col-span-3 lg:aspect-auto lg:min-h-[26rem]">
                         @if ($featured->featuredImage)
-                            <img src="{{ $featured->featuredImage->url }}" alt="{{ $featured->featuredImage->alt ?: $featured->title }}" class="absolute inset-0 size-full object-cover transition duration-700 group-hover:scale-105" fetchpriority="high">
+                            <img src="{{ $featured->featuredImage->url }}" {{ $featured->featuredImage->responsive('(min-width: 1024px) 60vw, 100vw') }} alt="{{ $featured->featuredImage->alt ?: $featured->title }}" class="absolute inset-0 size-full object-cover transition duration-700 group-hover:scale-105" fetchpriority="high">
                         @endif
                     </div>
                     <div class="flex flex-col justify-center p-6 sm:p-10 lg:col-span-2">
-                        <p class="text-xs font-semibold tracking-wider text-accent uppercase">Latest story @if ($featured->published_at)· {{ local_date($featured->published_at) }}@endif</p>
-                        <h2 class="mt-3 text-2xl font-extrabold leading-tight text-balance sm:text-3xl">
+                        <p class="inline-flex self-start rounded-full bg-accent px-3 py-1 text-xs font-semibold tracking-wider text-on-accent uppercase">Latest story @if ($featured->published_at)· {{ local_date($featured->published_at) }}@endif</p>
+                        <h2 class="mt-5 text-2xl leading-tight font-bold text-balance sm:text-3xl lg:text-4xl">
                             <a href="{{ $featured->url() }}" class="after:absolute after:inset-0">{{ $featured->title }}</a>
                         </h2>
                         <p class="mt-4 line-clamp-4 text-white/80">{{ $featured->summary(45) }}</p>
+                        @if ($featured->author)
+                            <a href="{{ $featured->author->url() }}" class="relative z-10 mt-6 inline-flex items-center gap-2.5 self-start text-sm font-semibold text-white hover:text-accent" rel="author">
+                                <x-site.author-avatar :author="$featured->author" size="size-9" text="text-xs" class="ring-white/30" />
+                                {{ $featured->author->name }}
+                            </a>
+                        @endif
                         <span class="mt-6 inline-flex items-center gap-1 font-semibold text-accent">Read the story <x-icon name="arrow-right" class="size-4 transition group-hover:translate-x-1" /></span>
                     </div>
                 </article>
@@ -49,18 +56,24 @@
                 <div class="mt-12 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
                     @foreach ($grid as $post)
                         <article class="group relative flex flex-col">
-                            <div class="aspect-[16/10] overflow-hidden rounded-2xl bg-slate-100">
+                            <div class="aspect-[16/10] overflow-hidden rounded-3xl bg-soft shadow-card transition duration-300 group-hover:shadow-card-hover">
                                 @if ($post->featuredImage)
-                                    <img src="{{ $post->featuredImage->url }}" alt="" loading="lazy" class="size-full object-cover transition duration-500 group-hover:scale-105">
+                                    <img src="{{ $post->featuredImage->url }}" {{ $post->featuredImage->responsive('(min-width: 1024px) 400px, (min-width: 640px) 50vw, 100vw') }} alt="" loading="lazy" class="size-full object-cover transition duration-700 group-hover:scale-110">
                                 @endif
                             </div>
                             @if ($post->published_at)
-                                <time datetime="{{ $post->published_at->toDateString() }}" class="mt-4 text-xs font-semibold tracking-wide text-primary uppercase">{{ local_date($post->published_at) }}</time>
+                                <time datetime="{{ $post->published_at->toDateString() }}" class="mt-5 text-xs font-bold tracking-wider text-accent-ink uppercase">{{ local_date($post->published_at) }}</time>
                             @endif
                             <h3 class="mt-1.5 text-lg leading-snug font-bold text-secondary group-hover:text-primary">
                                 <a href="{{ $post->url() }}" class="after:absolute after:inset-0">{{ $post->title }}</a>
                             </h3>
                             <p class="mt-2 line-clamp-2 text-sm text-slate-600">{{ $post->summary(22) }}</p>
+                            @if ($post->author)
+                                <a href="{{ $post->author->url() }}" class="relative z-10 mt-4 inline-flex items-center gap-2 self-start text-sm font-semibold text-secondary hover:text-primary" rel="author">
+                                    <x-site.author-avatar :author="$post->author" size="size-7" text="text-[10px]" />
+                                    {{ $post->author->name }}
+                                </a>
+                            @endif
                         </article>
                     @endforeach
                 </div>

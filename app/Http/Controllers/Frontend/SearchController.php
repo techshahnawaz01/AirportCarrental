@@ -16,7 +16,7 @@ class SearchController extends Controller
 
         $query = Page::published()
             ->where('noindex', false)
-            ->with('featuredImage')
+            ->with(['featuredImage', 'author.avatar'])
             ->when(mb_strlen($term) >= 2, fn ($q) => $q->where(fn ($q) => $q
                 ->where('title', 'like', '%'.$term.'%')
                 ->orWhere('excerpt', 'like', '%'.$term.'%')

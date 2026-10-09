@@ -10,10 +10,10 @@
     @if ($favicon = $settings->url('branding.favicon'))<link rel="icon" href="{{ $favicon }}">@endif
     {{-- Apply the saved light/dark preference before first paint. --}}
     <script>try{if(localStorage.getItem('admin-theme')==='dark'||(!localStorage.getItem('admin-theme')&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark')}catch(e){}</script>
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet">
+    <link rel="preload" href="{{ Vite::asset('resources/fonts/inter-latin-wght-normal.woff2') }}" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="{{ Vite::asset('resources/fonts/poppins-latin-700-normal.woff2') }}" as="font" type="font/woff2" crossorigin>
     <style>:root{ {{ $settings->cssVariables() }} }</style>
-    @vite(['resources/css/app.css', 'resources/js/admin.js'])
+    @vite(['resources/css/admin.css', 'resources/js/admin.js'])
 </head>
 <body class="min-h-screen bg-surface-muted font-sans text-fg antialiased">
     <x-admin.sidebar />
@@ -71,8 +71,8 @@
                     <x-icon name="search" class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-fg-muted" />
                     <input type="search" data-picker-search placeholder="Search images…" class="form-control py-2 pl-9" aria-label="Search images">
                 </div>
-                <label class="btn btn-secondary btn-sm cursor-pointer" data-picker-upload-label>
-                    <x-icon name="upload" class="size-4" /> Upload
+                <label class="btn btn-secondary btn-sm cursor-pointer">
+                    <span data-picker-upload-label class="inline-flex items-center gap-2"><x-icon name="upload" class="size-4" /> Upload</span>
                     <input type="file" data-picker-upload multiple accept="image/*" class="sr-only">
                 </label>
                 <button type="button" class="btn-icon" data-modal-close aria-label="Close"><x-icon name="x" /></button>
@@ -81,6 +81,10 @@
                 <div data-picker-grid class="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6"></div>
                 <p data-picker-empty hidden class="py-16 text-center text-sm text-fg-muted">No images found. Upload one to get started.</p>
                 <div class="mt-5 text-center"><button type="button" data-picker-more hidden class="btn btn-secondary btn-sm">Load more</button></div>
+            </div>
+            <div data-picker-alts hidden class="max-h-48 space-y-2 overflow-y-auto border-t border-line bg-surface px-5 py-3">
+                <p class="text-sm font-semibold">Alt text <span class="font-normal text-fg-muted">– describe each new image for screen readers and SEO</span></p>
+                <div data-picker-alt-list class="space-y-2"></div>
             </div>
             <div class="flex justify-end gap-2 border-t border-line px-5 py-3">
                 <button type="button" class="btn btn-secondary" data-modal-close>Cancel</button>

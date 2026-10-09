@@ -40,7 +40,11 @@ class HtmlSanitizer
             $host = parse_url((string) $iframe->getAttribute('src'), PHP_URL_HOST);
             if (! in_array($host, self::IFRAME_HOSTS, true)) {
                 $iframe->parentNode?->removeChild($iframe);
+
+                continue;
             }
+            // An empty sandbox (added by TinyMCE 7) blocks the scripts Google Maps and video players need.
+            $iframe->removeAttribute('sandbox');
         }
 
         foreach (iterator_to_array($xpath->query('//*')) as $element) {
@@ -49,7 +53,8 @@ class HtmlSanitizer
                 $name = strtolower($attribute->name);
                 $value = strtolower(preg_replace('/\s+/', '', $attribute->value));
 
-                if (str_starts_with($name, 'on')
+                // bis_* attributes are injected by a browser extension when content is copied from a web page.
+                if (str_starts_with($name, 'on') || str_starts_with($name, 'bis_')
                     || (in_array($name, ['href', 'src', 'action', 'formaction', 'xlink:href'], true) && preg_match('/^(javascript|vbscript|data:text)/', $value))
                     || ($name === 'style' && preg_match('/expression\(|javascript:|url\(\s*["\']?\s*javascript/', $value))) {
                     $element->removeAttribute($attribute->name);

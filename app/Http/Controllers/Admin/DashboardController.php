@@ -17,6 +17,11 @@ class DashboardController extends AdminController
 {
     public function __invoke(FlightDataService $flights)
     {
+        // Authors land on their own posts; the dashboard shows site-wide enquiries and stats.
+        if (! auth()->user()->canManageAllContent()) {
+            return redirect()->route('admin.pages.index', ['type' => 'post']);
+        }
+
         $pageCounts = Page::query()
             ->selectRaw('type, COUNT(*) as total, SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END) as published')
             ->groupBy('type')->get()->keyBy('type');

@@ -8,19 +8,21 @@
     <meta name="robots" content="noindex, nofollow">
     <title>@yield('title') · {{ $settings->get('branding.site_name') }}</title>
     @if ($favicon = $settings->url('branding.favicon'))<link rel="icon" href="{{ $favicon }}">@endif
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet">
+    <link rel="preload" href="{{ Vite::asset('resources/fonts/inter-latin-wght-normal.woff2') }}" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="{{ Vite::asset('resources/fonts/poppins-latin-700-normal.woff2') }}" as="font" type="font/woff2" crossorigin>
     <style>:root{ {{ $settings->cssVariables() }} }</style>
-    @vite(['resources/css/app.css', 'resources/js/admin.js'])
+    @vite(['resources/css/admin.css', 'resources/js/admin.js'])
 </head>
 <body class="min-h-screen bg-surface-muted font-sans text-fg antialiased">
     <div class="grid min-h-screen lg:grid-cols-2">
-        <div class="relative hidden overflow-hidden bg-secondary lg:block">
-            <div class="absolute inset-0 bg-gradient-to-br from-primary/80 to-secondary"></div>
+        <div class="relative isolate hidden overflow-hidden bg-primary-dark lg:block">
+            <div class="hero-overlay absolute inset-0 -z-10"></div>
+            <div class="hero-blob top-16 left-16 -z-10 size-72 bg-white/10"></div>
+            <div class="hero-blob right-10 bottom-10 -z-10 size-96 bg-accent/25"></div>
             <div class="relative flex h-full flex-col justify-between p-12 text-white">
                 <p class="text-lg font-semibold">{{ $settings->get('branding.site_name') }}</p>
                 <div>
-                    <p class="text-3xl font-bold tracking-tight">Manage your website with confidence.</p>
+                    <p class="font-display text-4xl leading-tight font-bold tracking-tight">Manage your website with <span class="text-accent">confidence.</span></p>
                     <p class="mt-3 max-w-md text-white/75">Pages, media, navigation, SEO and branding — all in one place.</p>
                 </div>
                 <p class="text-sm text-white/60">{{ $settings->copyright() }}</p>

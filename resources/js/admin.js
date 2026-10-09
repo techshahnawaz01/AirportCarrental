@@ -12,6 +12,7 @@ import { initSlugFields } from './admin/slug';
 import { initEditors } from './admin/editor';
 import { initMediaLibrary } from './admin/media-library';
 import { initMenuBuilder } from './admin/menu-builder';
+import { initLocalTimes } from './admin/local-time';
 
 document.addEventListener('DOMContentLoaded', () => {
     initLayout();
@@ -27,19 +28,20 @@ document.addEventListener('DOMContentLoaded', () => {
     initMediaLibrary();
     initMenuBuilder();
     initEditors();
+    initLocalTimes();
     showFlashMessages();
 
     // Settings/page forms: refresh image previews with the stored URLs after saving.
     document.addEventListener('ajax:success', (event) => {
         const images = event.detail?.data?.images;
         if (images) {
-            Object.entries(images).forEach(([key, url]) => {
-                event.target.querySelector(`[data-image-field][data-key="${key}"]`)?.dispatchEvent(new CustomEvent('image:saved', { detail: { url } }));
+            Object.entries(images).forEach(([key, image]) => {
+                event.target.querySelector(`[data-image-field][data-key="${key}"]`)?.dispatchEvent(new CustomEvent('image:saved', { detail: { url: image.url, id: image.id ?? '', alt: image.alt } }));
             });
         }
-        ['featured_image', 'og_image'].forEach((key) => {
+        ['featured_image', 'og_image', 'avatar'].forEach((key) => {
             const item = event.detail?.data?.[key];
-            if (item) event.target.querySelector(`[data-image-field][data-key="${key}"]`)?.dispatchEvent(new CustomEvent('image:saved', { detail: { url: item.url, value: item.id } }));
+            if (item) event.target.querySelector(`[data-image-field][data-key="${key}"]`)?.dispatchEvent(new CustomEvent('image:saved', { detail: { url: item.url, value: item.id, alt: item.alt } }));
         });
         // Forms that add a row to a list: <form data-prepend-to="#list" data-hide-on-success="#empty">
         const form = event.target;

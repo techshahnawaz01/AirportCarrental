@@ -1,6 +1,7 @@
 @php
-    $unread = \App\Models\Enquiry::unread()->count();
-    $pending = \App\Models\Comment::where('is_approved', false)->count();
+    $allContent = auth()->user()->canManageAllContent();
+    $unread = $allContent ? \App\Models\Enquiry::unread()->count() : 0;
+    $pending = $allContent ? \App\Models\Comment::where('is_approved', false)->count() : 0;
     $currentType = request()->routeIs('admin.pages.*') ? (request('type') ?? (request()->route('page')?->type ?? 'page')) : null;
     $logo = settings()->url('branding.admin_logo', 'branding.logo');
 @endphp
@@ -25,8 +26,10 @@
         <div>
             <p class="px-3 pb-2 text-[11px] font-semibold tracking-wider text-slate-500 uppercase">Website</p>
             <div class="space-y-1">
+                {{-- Authors only see their own blog posts. --}}
                 @foreach (config('cms.page_types') as $type => $config)
-                    <x-admin.nav-link :href="route('admin.pages.index', ['type' => $type])" :icon="$config['icon']" :active="$currentType === $type">{{ $config['label'] }}</x-admin.nav-link>
+                    @continue(! $allContent && $type !== 'post')
+                    <x-admin.nav-link :href="route('admin.pages.index', ['type' => $type])" :icon="$config['icon']" :active="$currentType === $type">{{ $allContent ? $config['label'] : 'My posts' }}</x-admin.nav-link>
                 @endforeach
                 <x-admin.nav-link :href="route('admin.media.index')" icon="photo" :active="request()->routeIs('admin.media.*')">Media</x-admin.nav-link>
                 @can('manage-site')
@@ -35,6 +38,7 @@
             </div>
         </div>
 
+        @can('manage-content')
         <div>
             <p class="px-3 pb-2 text-[11px] font-semibold tracking-wider text-slate-500 uppercase">Engagement</p>
             <div class="space-y-1">
@@ -43,6 +47,7 @@
                 <x-admin.nav-link :href="route('admin.subscribers.index')" icon="mail" :active="request()->routeIs('admin.subscribers.*')">Subscribers</x-admin.nav-link>
             </div>
         </div>
+        @endcan
 
         @can('manage-site')
             <div>

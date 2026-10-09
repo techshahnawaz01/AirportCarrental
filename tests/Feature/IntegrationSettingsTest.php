@@ -39,6 +39,9 @@ class IntegrationSettingsTest extends TestCase
 
     public function test_saved_key_is_used_for_wait_times_and_never_rendered(): void
     {
+        // Only the TSA key is under test: keep the flights check off the real Aviationstack API.
+        config(['cms.integrations.aviationstack.keys' => '']);
+
         $this->save(['tsa_api_key' => 'secretKey1'])->assertOk();
 
         Http::fake(['www.tsawaittimes.com/api/airport/secretKey1/MIA/json' => Http::response([

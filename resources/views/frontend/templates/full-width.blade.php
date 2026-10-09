@@ -3,7 +3,7 @@
 @section('content')
     <x-site.page-hero :page="$page" :subtitle="$page->excerpt" />
 
-    <div class="container-site py-12 lg:py-16">
+    <div class="container-site py-12 lg:py-20">
         <div class="content-prose mx-auto max-w-5xl">{!! $content !!}</div>
 
         @if ($page->faqs->isNotEmpty())

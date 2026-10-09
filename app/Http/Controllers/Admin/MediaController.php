@@ -52,13 +52,15 @@ class MediaController extends AdminController
 
     public function update(Request $request, Media $media)
     {
+        $this->authorizeOwn($request, $media);
         $media->update($request->validate(['alt' => ['nullable', 'string', 'max:255']]));
 
         return $this->success('Details saved.');
     }
 
-    public function destroy(Media $media)
+    public function destroy(Request $request, Media $media)
     {
+        $this->authorizeOwn($request, $media);
         $usage = Page::where('featured_image_id', $media->id)->orWhere('og_image_id', $media->id)->count()
             + MenuItem::where('image_id', $media->id)->count();
 
@@ -66,5 +68,11 @@ class MediaController extends AdminController
         $this->log('deleted', 'Deleted media "'.$media->original_name.'"');
 
         return $this->success($usage ? "Deleted. It was removed from {$usage} ".str('place')->plural($usage).'.' : 'File deleted.');
+    }
+
+    /** Authors may use every file but only edit or delete the ones they uploaded. */
+    private function authorizeOwn(Request $request, Media $media): void
+    {
+        abort_if(! $request->user()->canManageAllContent() && $media->uploaded_by !== $request->user()->id, 403);
     }
 }

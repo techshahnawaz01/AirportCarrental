@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Models\Media;
 use App\Models\Page;
 use App\Services\FlightDataService;
 use App\Services\MediaService;
@@ -82,7 +83,11 @@ class SettingController extends AdminController
         return $this->success($definition['label'].' settings saved.', [
             'reload' => $group === 'integrations',
             'images' => collect($fields)->filter(fn ($f) => $f['type'] === 'image')
-                ->mapWithKeys(fn ($f, $key) => [$key => $this->settings->url("{$group}.{$key}")]),
+                ->mapWithKeys(function ($f, $key) use ($group) {
+                    $media = ($path = settings("{$group}.{$key}")) ? Media::where('path', $path)->first() : null;
+
+                    return [$key => ['url' => $this->settings->url("{$group}.{$key}"), 'id' => $media?->id, 'alt' => $media?->alt]];
+                }),
         ]);
     }
 

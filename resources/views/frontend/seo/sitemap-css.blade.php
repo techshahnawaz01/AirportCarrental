@@ -1,9 +1,9 @@
 @php
     $s = settings();
     $site = addcslashes((string) $s->get('branding.site_name'), '"\\');
-    $primary = $s->get('theme.primary_color', '#0b5cab');
-    $secondary = $s->get('theme.secondary_color', '#0f172a');
-    $accent = $s->get('theme.accent_color', '#f59e0b');
+    $primary = $s->get('theme.primary_color', '#0c6dd4');
+    $secondary = $s->get('theme.secondary_color', '#1a2332');
+    $accent = $s->get('theme.accent_color', '#ff7203');
 @endphp
 /* Styles sitemap.xml for people. Element names come from the sitemaps.org schema. */
 @import url('https://fonts.bunny.net/css?family=inter:400,500,600,800&display=swap');
@@ -82,6 +82,18 @@ loc {
     word-break: break-all;
 }
 
+loc a {
+    color: inherit;
+    text-decoration: none;
+}
+
+loc a:hover,
+loc a:focus-visible {
+    color: {{ $primary }};
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
 lastmod {
     grid-area: date;
     display: block;
@@ -115,7 +127,7 @@ priority::before {
 
 /* Footer with the total */
 urlset::after {
-    content: counter(page) " URLs · Search engines like Google and Bing read this file to find every page and when it was last modified. It is generated automatically from published pages.";
+    content: counter(page) " URLs · " attr(data-note) "Search engines like Google and Bing read this file to find every page and when it was last modified. It is generated automatically from published pages.";
     display: block;
     width: calc(100% - 32px);
     max-width: 720px;

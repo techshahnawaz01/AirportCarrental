@@ -8,8 +8,12 @@
     'valueKey' => 'id', 'destroyUrl' => null, 'key' => null, 'accept' => 'image/png,image/jpeg,image/webp,image/gif',
     'maxKb' => null, 'aspect' => 'aspect-video',
 ])
-@php $errorKey = preg_replace(['/\]\[|\[/', '/\]/'], ['.', ''], $upload ?: $name); @endphp
+@php
+    $errorKey = preg_replace(['/\]\[|\[/', '/\]/'], ['.', ''], $upload ?: $name);
+    $media = filled($value) ? \App\Models\Media::where($valueKey === 'path' ? 'path' : 'id', $value)->first() : null;
+@endphp
 <div data-image-field data-value-key="{{ $valueKey }}" @if ($key) data-key="{{ $key }}" @endif
+     data-media-id="{{ $media?->id }}" data-alt-url="{{ route('admin.media.update', '__ID__') }}" data-alt-key="{{ $errorKey }}"
      @if ($destroyUrl) data-destroy-url="{{ $destroyUrl }}" @endif @if ($maxKb) data-max-kb="{{ $maxKb }}" @endif
      {{ $attributes->merge(['class' => '']) }}>
     @if ($label)<p class="form-label">{{ $label }}</p>@endif
@@ -32,6 +36,10 @@
             <button type="button" class="btn btn-secondary btn-sm" data-image-pick><x-icon name="photo" class="size-4" /> Library</button>
             <button type="button" class="btn btn-ghost btn-sm text-red-600" data-image-remove @unless ($url) hidden @endunless><x-icon name="trash" class="size-4" /> Remove</button>
             <span data-image-name class="ml-auto truncate text-xs text-fg-muted"></span>
+        </div>
+        <div data-image-alt-row class="border-t border-line bg-surface p-2" @unless ($url) hidden @endunless>
+            <input type="text" data-image-alt value="{{ $media?->alt }}" maxlength="255" class="form-control py-1.5 text-sm"
+                   placeholder="Alt text – describe the image" aria-label="Alt text{{ $label ? ' for '.$label : '' }}">
         </div>
     </div>
     @if ($help)<p class="form-help">{{ $help }}</p>@endif

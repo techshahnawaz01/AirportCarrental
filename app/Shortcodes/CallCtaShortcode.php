@@ -11,7 +11,7 @@ class CallCtaShortcode implements Shortcode
 {
     public function render(array $attributes, ?string $content, ?Page $page): string
     {
-        $phone = $attributes['phone'] ?? settings('contact.phone') ?? settings('general.phone');
+        $phone = site_phone();
 
         if (! $phone) {
             return '';

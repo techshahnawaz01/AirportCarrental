@@ -94,8 +94,21 @@ class PublicSiteTest extends TestCase
         $this->ajax()->get('/search?q=Lounge')->assertOk()->assertJsonPath('data.results.0.title', 'Lounges at MIA');
     }
 
-    public function test_branded_404_page(): void
+    public function test_cta_heading_level_can_be_chosen(): void
+    {
+        Page::create(['title' => 'Maps', 'slug' => 'maps', 'is_active' => true, 'content' => '[cta title="Need help finding your gate?" heading="h3"][cta title="Default level"]']);
+
+        $this->get('/maps')->assertOk()
+            ->assertSee('<h3 class="mx-auto', false)->assertSee('Need help finding your gate?</h3>', false)
+            ->assertSee('Default level</h2>', false);
+    }
+
+    public function test_missing_pages_return_a_real_404(): void
     {
         $this->get('/does-not-exist')->assertNotFound()->assertSee('Page not found');
+        $this->get('/old-site/page.php')->assertNotFound();
+        $this->get('/admin/does-not-exist')->assertNotFound()->assertSee('Page not found');
+        $this->ajax()->get('/does-not-exist')->assertNotFound();
+        $this->flushHeaders()->get('/build/assets/missing.js')->assertNotFound();
     }
 }

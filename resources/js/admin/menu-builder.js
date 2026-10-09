@@ -25,7 +25,7 @@ export function initMenuBuilder() {
         form.elements.is_active.checked = item.is_active ?? true;
         // An item cannot be its own parent.
         [...form.elements.parent_id.options].forEach((o) => (o.disabled = item.id && Number(o.value) === item.id));
-        form.querySelector('[data-image-field]')?.dispatchEvent(new CustomEvent('image:saved', { detail: { url: item.image_url || '', value: item.image_id ?? '' } }));
+        form.querySelector('[data-image-field]')?.dispatchEvent(new CustomEvent('image:saved', { detail: { url: item.image_url || '', value: item.image_id ?? '', alt: item.image_alt ?? '' } }));
         if (!item.image_url) {
             const field = form.querySelector('[data-image-field]');
             field?.querySelector('[data-image-remove]')?.setAttribute('hidden', '');

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Admin\Concerns\SavesAuthorProfile;
 use App\Http\Requests\Admin\UserRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -9,6 +10,8 @@ use Illuminate\Validation\Rule;
 
 class UserController extends AdminController
 {
+    use SavesAuthorProfile;
+
     public function index(Request $request)
     {
         $filters = $request->validate([
@@ -33,7 +36,7 @@ class UserController extends AdminController
 
     public function store(UserRequest $request)
     {
-        $user = User::create($request->validated());
+        $user = User::create($this->authorProfileData($request, $request->validated()));
         $this->log('created', 'Created user '.$user->email, $user);
 
         return $this->success('User created.', ['redirect' => route('admin.users.index')], 201);
@@ -41,12 +44,14 @@ class UserController extends AdminController
 
     public function edit(User $user)
     {
+        $user->load('avatar');
+
         return view('admin.users.form', compact('user'));
     }
 
     public function update(UserRequest $request, User $user)
     {
-        $data = $request->validated();
+        $data = $this->authorProfileData($request, $request->validated());
         if (blank($data['password'] ?? null)) {
             unset($data['password']);
         }
@@ -58,7 +63,7 @@ class UserController extends AdminController
         $user->update($data);
         $this->log('updated', 'Updated user '.$user->email, $user);
 
-        return $this->success('User saved.');
+        return $this->success('User saved.', ['avatar' => $user->load('avatar')->avatar?->toPickerArray()]);
     }
 
     public function toggle(Request $request, User $user)

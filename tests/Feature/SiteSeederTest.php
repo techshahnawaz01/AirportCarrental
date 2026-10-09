@@ -43,7 +43,7 @@ class SiteSeederTest extends TestCase
 
     public function test_theme_colours_are_output_as_css_variables(): void
     {
-        $this->get('/')->assertSee('--brand-primary:#06519c', false);
+        $this->get('/')->assertSee('--brand-primary:#0c6dd4', false);
     }
 
     public function test_every_menu_item_is_linked(): void

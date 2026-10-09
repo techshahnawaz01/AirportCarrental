@@ -32,14 +32,15 @@ class MiamiAirportSeeder extends SiteSeeder
         $this->settings([
             'branding.site_name' => 'MiamiAirportMIA-Info',
             'branding.tagline' => 'Your independent guide to Miami International Airport (MIA)',
+            'branding.top_bar_text' => 'Your independent guide to Miami International Airport (MIA)',
             'branding.logo' => $this->image('logo.webp', 'Miami Airport MIA Info', 'branding')->path,
             'branding.favicon' => $this->image('favicon.png', 'Favicon', 'branding')->path,
 
-            'theme.primary_color' => '#06519c',
-            'theme.secondary_color' => '#0b1f3a',
-            'theme.accent_color' => '#ffde66',
-            'theme.button_color' => '#06519c',
-            'theme.text_color' => '#1e293b',
+            'theme.primary_color' => '#0c6dd4',
+            'theme.secondary_color' => '#1a2332',
+            'theme.accent_color' => '#ff7203',
+            'theme.button_color' => '#0c6dd4',
+            'theme.text_color' => '#1a2332',
             'theme.background_color' => '#ffffff',
 
             'general.site_email' => 'info@miamiairportmia-info.com',

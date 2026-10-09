@@ -16,6 +16,20 @@ class PageManagementTest extends TestCase
         return $overrides + ['title' => 'Terminal Guide', 'type' => 'page', 'template' => 'default', 'is_active' => 1];
     }
 
+    public function test_alt_text_typed_next_to_an_upload_is_saved_on_the_image(): void
+    {
+        $this->actingAs($this->editor())->ajax()->post('/admin/pages', $this->payload([
+            'featured_image_upload' => UploadedFile::fake()->image('img_4032.jpg', 800, 600),
+            'og_image_upload' => UploadedFile::fake()->image('share.jpg', 1200, 630),
+            '_alt' => ['featured_image_upload' => 'Terminal B check-in hall'],
+        ]))->assertCreated();
+
+        $page = Page::firstOrFail();
+        $this->assertSame('Terminal B check-in hall', $page->featuredImage->alt);
+        // Without alt text the upload still works and falls back to the file name.
+        $this->assertSame('Share', $page->ogImage->alt);
+    }
+
     public function test_create_page_with_faqs_image_and_sanitised_content(): void
     {
         $this->actingAs($this->editor())->ajax()->post('/admin/pages', $this->payload([

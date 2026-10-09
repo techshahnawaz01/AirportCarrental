@@ -23,3 +23,33 @@
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
 </IfModule>
+
+# ---------------------------------------------------------------------------
+# Performance: compress text responses and let browsers cache static files.
+# (Ignored when the modules are not available.)
+# ---------------------------------------------------------------------------
+<IfModule mod_brotli.c>
+    AddOutputFilterByType BROTLI_COMPRESS text/html text/plain text/css text/xml text/javascript application/javascript application/json application/xml application/ld+json image/svg+xml
+</IfModule>
+<IfModule !mod_brotli.c>
+    <IfModule mod_deflate.c>
+        AddOutputFilterByType DEFLATE text/html text/plain text/css text/xml text/javascript application/javascript application/json application/xml application/ld+json image/svg+xml
+    </IfModule>
+</IfModule>
+
+<IfModule mod_headers.c>
+    # Vite build files have a content hash in their name, so they never change.
+    <If "%{REQUEST_URI} =~ m#^/build/assets/#">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </If>
+    # Uploaded media get a random suffix on upload; cache them for a month.
+    <If "%{REQUEST_URI} =~ m#^/storage/#">
+        Header set Cache-Control "public, max-age=2592000"
+    </If>
+    Header append Vary Accept-Encoding "expr=%{CONTENT_TYPE} =~ m#^(text/|application/(javascript|json|xml))#"
+</IfModule>
+
+<IfModule mod_mime.c>
+    AddType font/woff2 .woff2
+    AddType image/webp .webp
+</IfModule>

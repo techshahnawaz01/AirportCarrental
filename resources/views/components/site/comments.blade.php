@@ -1,10 +1,10 @@
 @props(['page', 'comments'])
-<section id="comments" class="mt-12 border-t border-line pt-10" aria-labelledby="comments-heading">
-    <h2 id="comments-heading" class="text-2xl font-bold text-secondary">Comments <span class="text-slate-400">({{ $comments->count() }})</span></h2>
+<section id="comments" class="mt-16 border-t border-line pt-12" aria-labelledby="comments-heading">
+    <h2 id="comments-heading" class="flex items-center gap-3 text-2xl font-bold text-secondary">Comments <span class="badge badge-primary text-sm">{{ $comments->count() }}</span></h2>
 
     @forelse ($comments as $comment)
-        <article class="mt-6 flex gap-4">
-            <div class="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary">{{ mb_strtoupper(mb_substr($comment->name, 0, 1)) }}</div>
+        <article class="mt-5 flex gap-4 rounded-2xl border border-line bg-white p-5 shadow-sm">
+            <div class="flex size-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary-dark font-display font-semibold text-white shadow-glow-primary">{{ mb_strtoupper(mb_substr($comment->name, 0, 1)) }}</div>
             <div class="min-w-0 flex-1">
                 <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
                     <p class="font-semibold text-secondary">{{ $comment->name }}</p>
@@ -22,9 +22,9 @@
         <p class="mt-4 text-slate-500">No comments yet. Be the first to share your experience.</p>
     @endforelse
 
-    <form action="{{ route('comments.store', $page) }}" method="POST" data-ajax-form data-reset class="mt-10 rounded-2xl border border-line bg-slate-50 p-5 sm:p-6" novalidate>
+    <form action="{{ route('comments.store', $page) }}" method="POST" data-ajax-form data-reset class="mt-10 rounded-3xl border border-line bg-soft p-6 sm:p-8" novalidate>
         @csrf
-        <h3 class="text-lg font-semibold text-secondary">Leave a comment</h3>
+        <h3 class="text-xl font-bold text-secondary">Leave a comment</h3>
         <p class="mt-1 text-sm text-slate-500">Your email is never published. Comments appear after moderation.</p>
         <input type="text" name="website" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true">
         <div class="mt-5 grid gap-4 sm:grid-cols-2">
@@ -43,6 +43,6 @@
             </div>
         </fieldset>
         <x-ui.textarea name="body" label="Comment" rows="4" required class="mt-4" maxlength="2000" />
-        <button class="btn btn-primary mt-5" data-loading-text="Submitting…">Post comment</button>
+        <button class="btn btn-accent mt-6" data-loading-text="Submitting…">Post comment</button>
     </form>
 </section>

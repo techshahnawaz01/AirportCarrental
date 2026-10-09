@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Requests\Admin\PageRequest;
 use App\Models\Page;
+use App\Models\User;
 use App\Services\PageService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -21,11 +22,12 @@ class PageController extends AdminController
             'q' => ['nullable', 'string', 'max:100'],
             'sort' => ['nullable', Rule::in(['updated', 'title', 'created'])],
         ]);
-        $type = $filters['type'] ?? 'page';
+        $type = $request->user()->canManageAllContent() ? ($filters['type'] ?? 'page') : 'post';
 
         $pages = Page::query()
             ->ofType($type)
-            ->with('parent:id,title')
+            ->when(! $request->user()->canManageAllContent(), fn ($q) => $q->where('author_id', $request->user()->id))
+            ->with(['parent:id,title', 'author:id,name'])
             ->search($filters['q'] ?? null)
             ->when(($filters['status'] ?? null) === 'published', fn ($q) => $q->where('is_active', true))
             ->when(($filters['status'] ?? null) === 'draft', fn ($q) => $q->where('is_active', false))
@@ -39,13 +41,15 @@ class PageController extends AdminController
             'type' => $type,
             'typeConfig' => config("cms.page_types.{$type}"),
             'filters' => $filters,
-            'trashedCount' => Page::onlyTrashed()->ofType($type)->count(),
+            'trashedCount' => Page::onlyTrashed()->ofType($type)
+                ->when(! $request->user()->canManageAllContent(), fn ($q) => $q->where('author_id', $request->user()->id))->count(),
         ]);
     }
 
     public function create(Request $request)
     {
         $type = array_key_exists($request->query('type'), config('cms.page_types')) ? $request->query('type') : 'page';
+        $type = $request->user()->canManageAllContent() ? $type : 'post';
         $parentSetting = config("cms.page_types.{$type}.parent_setting");
 
         $page = new Page([
@@ -54,6 +58,7 @@ class PageController extends AdminController
             'is_active' => true,
             'allow_comments' => (bool) config("cms.page_types.{$type}.comments"),
             'parent_id' => $parentSetting ? settings($parentSetting) : null,
+            'author_id' => $request->user()->id,
         ]);
 
         return view('admin.pages.form', $this->formData($page));
@@ -61,13 +66,16 @@ class PageController extends AdminController
 
     public function store(PageRequest $request)
     {
-        $page = $this->pages->save(new Page, $request->safe()->except(['featured_image_upload', 'og_image_upload']), $request->allFiles());
+        abort_if(! $request->user()->canManageAllContent() && $request->input('type') !== 'post', 403);
+
+        $page = $this->pages->save(new Page, $this->pageData($request), $request->allFiles());
 
         return $this->success($page->typeLabel().' created.', ['redirect' => route('admin.pages.edit', $page)], 201);
     }
 
     public function edit(Page $page)
     {
+        $this->authorizePage($page);
         $page->load('faqs', 'featuredImage', 'ogImage');
 
         return view('admin.pages.form', $this->formData($page));
@@ -75,10 +83,18 @@ class PageController extends AdminController
 
     public function update(PageRequest $request, Page $page)
     {
-        $this->pages->save($page, $request->safe()->except(['featured_image_upload', 'og_image_upload']), $request->allFiles());
+        $this->authorizePage($page);
+        abort_if(! $request->user()->canManageAllContent() && $request->input('type') !== 'post', 403);
+
+        $this->pages->save($page, $this->pageData($request), $request->allFiles());
         $page->load('featuredImage', 'ogImage');
 
-        return $this->success($page->typeLabel().' saved.', [
+        $timezone = PageService::timezone($request->input('client_timezone'));
+        $message = $page->is_active && $page->published_at?->isFuture()
+            ? $page->typeLabel().' saved. Scheduled to go live '.$page->published_at->copy()->timezone($timezone)->format('M j, Y g:i A').' (your time) – not visible until then.'
+            : $page->typeLabel().' saved.';
+
+        return $this->success($message, [
             'url' => $page->url(),
             'path' => $page->path,
             'featured_image' => $page->featuredImage?->toPickerArray(),
@@ -88,9 +104,12 @@ class PageController extends AdminController
 
     public function toggle(Page $page)
     {
+        $this->authorizePage($page);
+        // Publishing from the list means "live now", even if a future date was set earlier.
+        $publishing = ! $page->is_active;
         $page->forceFill([
-            'is_active' => ! $page->is_active,
-            'published_at' => $page->published_at ?? now(),
+            'is_active' => $publishing,
+            'published_at' => $publishing && (! $page->published_at || $page->published_at->isFuture()) ? now() : ($page->published_at ?? now()),
         ])->save();
         $this->log('updated', ($page->is_active ? 'Published ' : 'Unpublished ').'"'.$page->title.'"', $page);
 
@@ -99,6 +118,8 @@ class PageController extends AdminController
 
     public function destroy(Page $page)
     {
+        $this->authorizePage($page);
+
         if ($page->isHome()) {
             return $this->failure('The home page cannot be deleted. Choose another home page in Settings first.', 422);
         }
@@ -112,6 +133,7 @@ class PageController extends AdminController
     public function restore(int $id)
     {
         $page = Page::onlyTrashed()->findOrFail($id);
+        $this->authorizePage($page);
         $page->restore();
         $this->log('restored', 'Restored "'.$page->title.'"', $page);
 
@@ -130,10 +152,35 @@ class PageController extends AdminController
         return $this->success('Permanently deleted.');
     }
 
+    /** Validated fields; only administrators and editors may choose a post's author. */
+    private function pageData(PageRequest $request): array
+    {
+        $data = $request->safe()->except(['featured_image_upload', 'og_image_upload']);
+
+        if (! $request->user()->canManageAllContent()) {
+            $data['author_id'] = $request->user()->id;
+        } elseif (blank($data['author_id'] ?? null)) {
+            unset($data['author_id']);
+        }
+
+        return $data;
+    }
+
+    /** Authors can only work on their own blog posts. */
+    private function authorizePage(Page $page): void
+    {
+        $user = auth()->user();
+
+        abort_if(! $user->canManageAllContent() && ($page->type !== 'post' || $page->author_id !== $user->id), 403);
+    }
+
     private function formData(Page $page): array
     {
         return [
             'page' => $page,
+            'authors' => auth()->user()->canManageAllContent()
+                ? User::where('is_active', true)->orderBy('name')->pluck('name', 'id')->all()
+                : [],
             'typeConfig' => config("cms.page_types.{$page->type}"),
             'parents' => Page::parentOptions($page->exists ? $page : null),
             'templates' => config('cms.templates'),

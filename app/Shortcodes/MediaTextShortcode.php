@@ -13,7 +13,7 @@ class MediaTextShortcode implements Shortcode
         return view('frontend.shortcodes.media-text', [
             'image' => isset($attributes['image']) ? Media::where('path', $attributes['image'])->first() : null,
             'title' => $attributes['title'] ?? null,
-            'heading' => in_array($attributes['heading'] ?? 'h2', ['h1', 'h2', 'h3'], true) ? ($attributes['heading'] ?? 'h2') : 'h2',
+            'heading' => in_array($attributes['heading'] ?? 'h2', ['h1', 'h2', 'h3', 'h4'], true) ? ($attributes['heading'] ?? 'h2') : 'h2',
             'reverse' => ($attributes['position'] ?? 'left') === 'right',
             'content' => app(ShortcodeRenderer::class)->render($content, $page),
         ])->render();

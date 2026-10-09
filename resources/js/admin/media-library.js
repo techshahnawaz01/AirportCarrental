@@ -19,8 +19,15 @@ export function initMediaLibrary() {
         zone.classList.add('pointer-events-none');
         try {
             const response = await request(zone.dataset.url, { method: 'POST', body });
-            toast.success(response.message);
+            const items = response.data?.items || [];
+            toast.success(items.length > 1 ? `${response.message} Click an image to add its alt text.` : response.message);
             table?.dispatchEvent(new CustomEvent('refresh'));
+            // A single upload opens its details straight away so the alt text can be written.
+            if (items.length === 1) {
+                const url = `${zone.dataset.url}/${items[0].id}`;
+                openDetails(items[0], url, url);
+                document.getElementById('media-alt')?.select();
+            }
         } catch (error) {
             toast.error(error.errors ? Object.values(error.errors).flat()[0] : error.message);
         } finally {
@@ -45,11 +52,7 @@ export function initMediaLibrary() {
     );
     zone.addEventListener('drop', (e) => upload(e.dataTransfer.files));
 
-    // Details dialog: fill from the clicked tile.
-    document.addEventListener('click', (e) => {
-        const tile = e.target.closest('[data-media-details]');
-        if (!tile) return;
-        const item = JSON.parse(tile.dataset.mediaDetails);
+    const openDetails = (item, updateUrl, deleteUrl) => {
         const dialog = document.getElementById('media-details');
         dialog.querySelector('img').src = item.url;
         dialog.querySelector('[data-field="name"]').textContent = item.name;
@@ -57,11 +60,17 @@ export function initMediaLibrary() {
         dialog.querySelector('[data-field="url"]').value = item.url;
         dialog.querySelector('[data-field="path"]').value = item.path;
         const form = dialog.querySelector('form');
-        form.action = tile.dataset.updateUrl;
+        form.action = updateUrl;
         form.querySelector('[name="alt"]').value = item.alt || '';
         const del = dialog.querySelector('[data-delete]');
-        del.dataset.action = tile.dataset.deleteUrl;
+        del.dataset.action = deleteUrl;
         dialog.showModal();
+    };
+
+    // Details dialog: fill from the clicked tile.
+    document.addEventListener('click', (e) => {
+        const tile = e.target.closest('[data-media-details]');
+        if (tile) openDetails(JSON.parse(tile.dataset.mediaDetails), tile.dataset.updateUrl, tile.dataset.deleteUrl);
     });
 
     document.getElementById('media-details')?.addEventListener('click', async (e) => {

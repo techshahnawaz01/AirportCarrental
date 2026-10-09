@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Page;
+use App\Models\User;
 use App\Support\FaqRegistry;
 use Illuminate\Support\Str;
 
@@ -50,10 +51,27 @@ class SeoService
             'canonical' => $canonical,
             'image' => $image,
             'robots' => $robots,
-            'type' => $page?->type === 'post' ? 'article' : 'website',
+            'type' => $overrides['type'] ?? ($page?->type === 'post' ? 'article' : 'website'),
             'site_name' => $siteName,
-            'schema' => $page ? $this->schema($page, $canonical, $image) : [],
+            // Pages without a CMS record (e.g. author archives) can pass their own schema.org nodes.
+            'schema' => isset($overrides['schema'])
+                ? ['@context' => 'https://schema.org', '@graph' => $overrides['schema']]
+                : ($page ? $this->schema($page, $canonical, $image) : []),
         ];
+    }
+
+    /** schema.org Person for an author with a public profile page. */
+    public function personSchema(User $author): array
+    {
+        return array_filter([
+            '@type' => 'Person',
+            'name' => $author->name,
+            'url' => $author->url(),
+            'jobTitle' => $author->job_title,
+            'description' => $author->bio ? Str::limit(strip_tags($author->bio), 300) : null,
+            'image' => $author->avatar?->url,
+            'sameAs' => array_values($author->socialLinks()) ?: null,
+        ]);
     }
 
     /**
@@ -110,7 +128,9 @@ class SeoService
                 'image' => $image,
                 'datePublished' => optional($page->published_at ?? $page->created_at)->toIso8601String(),
                 'dateModified' => optional($page->updated_at)->toIso8601String(),
-                'author' => ['@type' => 'Organization', 'name' => $siteName],
+                'author' => $page->author && User::withPublicProfile()->whereKey($page->author_id)->exists()
+                    ? $this->personSchema($page->author)
+                    : ['@type' => 'Organization', 'name' => $siteName],
                 'mainEntityOfPage' => $url,
             ]);
         }

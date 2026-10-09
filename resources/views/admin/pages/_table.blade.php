@@ -27,7 +27,7 @@
                             @else
                                 <a href="{{ route('admin.pages.edit', $page) }}" class="block truncate font-medium hover:text-primary">{{ $page->title }}</a>
                             @endif
-                            <p class="truncate text-xs text-fg-muted">/{{ $page->path }} @if ($page->isHome())<x-ui.badge tone="primary" class="ml-1">Home</x-ui.badge>@endif</p>
+                            <p class="truncate text-xs text-fg-muted">/{{ $page->path }} @if ($page->isHome())<x-ui.badge tone="primary" class="ml-1">Home</x-ui.badge>@endif @if ($page->type === 'post' && $page->author) · by {{ $page->author->name }}@endif</p>
                         </td>
                         <td class="hidden text-fg-muted md:table-cell">{{ config('cms.templates.'.$page->template, $page->template) }}</td>
                         <td>
@@ -35,6 +35,9 @@
                                 <x-ui.badge tone="danger">In trash</x-ui.badge>
                             @else
                                 <x-ui.status-toggle :url="route('admin.pages.toggle', $page)" :active="$page->is_active" />
+                                @if ($page->is_active && $page->published_at?->isFuture())
+                                    <span class="mt-1 block text-xs font-medium text-amber-700 dark:text-amber-400" title="Not visible on the website until then">Scheduled · <time data-local-time="{{ $page->published_at->toIso8601String() }}">{{ local_date($page->published_at, 'M j, g:i A') }}</time></span>
+                                @endif
                             @endif
                         </td>
                         <td class="hidden text-fg-muted lg:table-cell" title="{{ local_date($page->updated_at, 'M j, Y g:i A') }}">{{ $page->updated_at->diffForHumans() }}</td>

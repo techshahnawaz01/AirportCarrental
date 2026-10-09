@@ -16,7 +16,9 @@ Route::get('/search', Frontend\SearchController::class)->middleware('throttle:se
 Route::get('/sitemap.xml', [Frontend\SeoController::class, 'sitemap'])->name('sitemap');
 Route::get('/sitemap', [Frontend\SeoController::class, 'sitemapPage'])->name('sitemap.page');
 Route::get('/sitemap.css', [Frontend\SeoController::class, 'sitemapStyles'])->name('sitemap.css');
+Route::get('/sitemap.js', [Frontend\SeoController::class, 'sitemapScript'])->name('sitemap.js');
 Route::get('/robots.txt', [Frontend\SeoController::class, 'robots'])->name('robots');
+Route::get('/author/{slug}', Frontend\AuthorController::class)->where('slug', '[a-z0-9-]+')->name('author');
 
 Route::middleware('throttle:forms')->group(function () {
     Route::post('/enquiries', [Frontend\EnquiryController::class, 'store'])->name('enquiries.store');
@@ -61,14 +63,16 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::resource('media', Admin\MediaController::class)->only(['index', 'store', 'update', 'destroy'])
             ->parameters(['media' => 'media']);
 
-        Route::patch('comments/{comment}/toggle', [Admin\CommentController::class, 'toggle'])->name('comments.toggle');
-        Route::resource('comments', Admin\CommentController::class)->only(['index', 'destroy']);
+        // Engagement (administrators and editors; authors only write posts)
+        Route::middleware('can:manage-content')->group(function () {
+            Route::patch('comments/{comment}/toggle', [Admin\CommentController::class, 'toggle'])->name('comments.toggle');
+            Route::resource('comments', Admin\CommentController::class)->only(['index', 'destroy']);
 
-        // Engagement
-        Route::patch('enquiries/{enquiry}/read', [Admin\EnquiryController::class, 'toggleRead'])->name('enquiries.read');
-        Route::resource('enquiries', Admin\EnquiryController::class)->only(['index', 'show', 'destroy']);
-        Route::resource('subscribers', Admin\SubscriberController::class)->only(['index', 'destroy']);
-        Route::get('subscribers/export', [Admin\SubscriberController::class, 'export'])->name('subscribers.export');
+            Route::patch('enquiries/{enquiry}/read', [Admin\EnquiryController::class, 'toggleRead'])->name('enquiries.read');
+            Route::resource('enquiries', Admin\EnquiryController::class)->only(['index', 'show', 'destroy']);
+            Route::resource('subscribers', Admin\SubscriberController::class)->only(['index', 'destroy']);
+            Route::get('subscribers/export', [Admin\SubscriberController::class, 'export'])->name('subscribers.export');
+        });
 
         // Account
         Route::get('profile', [Admin\ProfileController::class, 'edit'])->name('profile.edit');

@@ -51,6 +51,8 @@ export async function initEditors() {
             relative_urls: false,
             entity_encoding: 'raw',
             valid_elements: '*[*]',
+            // Embeds are limited to trusted hosts on the server; a sandbox would break Google Maps.
+            sandbox_iframes: false,
             invalid_elements: 'script,style,form,input,button,object,embed',
             setup(editor) {
                 editor.ui.registry.addButton('library', {

@@ -82,7 +82,17 @@
                 <x-ui.card title="Publishing">
                     <div class="space-y-5">
                         <x-ui.toggle name="is_active" label="Published" :checked="$page->is_active" help="Drafts are only visible to signed-in staff." />
-                        <x-ui.input name="published_at" type="datetime-local" label="Publish date" :value="optional($page->published_at)->format('Y-m-d\TH:i')" help="Future dates schedule the page." />
+                        {{-- Shown and read in the editor's own timezone (resources/js/admin/local-time.js); site timezone without JavaScript. --}}
+                        @php($siteTz = settings('general.timezone', config('app.timezone')))
+                        <input type="hidden" name="client_timezone" value="">
+                        <div>
+                            <x-ui.input name="published_at" type="datetime-local" label="Publish date" :value="$page->published_at?->copy()->timezone($siteTz)->format('Y-m-d\TH:i')"
+                                        :data-utc="$page->published_at?->toIso8601String()" />
+                            <p class="form-help">In your time (<span data-timezone-name>{{ $siteTz }}</span>). A later time schedules the page; now or earlier publishes it straight away.</p>
+                        </div>
+                        @if ($page->is_active && $page->published_at?->isFuture())
+                            <p class="rounded-lg bg-amber-500/10 px-3 py-2 text-xs font-medium text-amber-700 dark:text-amber-400">Scheduled: goes live <time data-local-time="{{ $page->published_at->toIso8601String() }}">{{ local_date($page->published_at, 'M j, Y g:i A') }}</time>. Not visible on the website until then.</p>
+                        @endif
                         <x-ui.toggle name="allow_comments" label="Allow comments" :checked="$page->allow_comments" />
                     </div>
                 </x-ui.card>
@@ -101,6 +111,12 @@
                         <x-ui.input name="sort_order" type="number" label="Order" :value="$page->sort_order ?? 0" help="Lower numbers appear first in listings." />
                     </div>
                 </x-ui.card>
+
+                @if ($page->type === 'post' && $authors)
+                    <x-ui.card title="Author">
+                        <x-ui.select name="author_id" label="Written by" :options="$authors" :value="$page->author_id ?? auth()->id()" help="Shown on the post and linked to the author's page." />
+                    </x-ui.card>
+                @endif
 
                 <x-ui.card title="Featured image">
                     <x-ui.image-field name="featured_image_id" upload="featured_image_upload" key="featured_image" :value="$page->featured_image_id" :url="$page->featuredImage?->url" help="Used for the page header and cards." :max-kb="config('cms.uploads.max_image_size')" />

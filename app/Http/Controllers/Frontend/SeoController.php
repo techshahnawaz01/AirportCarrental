@@ -4,7 +4,10 @@ namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
 use App\Models\Page;
+use App\Models\User;
+use App\Services\PageService;
 use App\Services\SeoService;
+use Carbon\CarbonInterface;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
@@ -18,8 +21,25 @@ class SeoController extends Controller
             ->sortBy(fn ($page) => $page->id === $homeId ? '' : $page->path)
             ->values();
 
+        // Listing pages change when what they show changes: a parent lists its children,
+        // and pages with a [latest_posts] block show the newest posts.
+        $live = Page::published()->get(['id', 'parent_id', 'type', 'author_id', 'created_at', 'updated_at', 'published_at']);
+        $childChange = $live->whereNotNull('parent_id')->groupBy('parent_id')->map(fn ($children) => $children->map->lastModified()->max());
+        $posts = $live->where('type', 'post');
+        $showsPosts = Page::published()->where('content', 'like', '%[latest_posts%')->pluck('id')->flip();
+
+        $lastmod = $pages->mapWithKeys(fn ($page) => [$page->id => $this->w3cDate(collect([
+            $page->lastModified(),
+            $childChange[$page->id] ?? null,
+            $showsPosts->has($page->id) ? $posts->map->lastModified()->max() : null,
+        ])->filter()->max())]);
+
+        // Author archives, dated by their latest published post.
+        $authors = User::withPublicProfile()->orderBy('slug')->get(['id', 'slug'])
+            ->each(fn ($author) => $author->last_post_at = ($latest = $posts->where('author_id', $author->id)->map->lastModified()->max()) ? $this->w3cDate($latest) : null);
+
         return response()
-            ->view('frontend.seo.sitemap', ['pages' => $pages], 200)
+            ->view('frontend.seo.sitemap', ['pages' => $pages, 'lastmod' => $lastmod, 'authors' => $authors], 200)
             ->header('Content-Type', 'application/xml; charset=UTF-8');
     }
 
@@ -33,6 +53,28 @@ class SeoController extends Controller
         return response()
             ->view('frontend.seo.sitemap-css', [], 200)
             ->header('Content-Type', 'text/css; charset=UTF-8')
+            ->header('Cache-Control', 'public, max-age=3600');
+    }
+
+    /**
+     * <lastmod> value in the site's timezone. Dates imported without a time (stored as
+     * midnight UTC) stay a plain date, so the day doesn't shift and no time is invented.
+     */
+    private function w3cDate(CarbonInterface $date): string
+    {
+        $utc = $date->copy()->utc();
+
+        return $utc->format('H:i:s') === '00:00:00'
+            ? $utc->toDateString()
+            : $date->copy()->timezone(PageService::timezone(null))->toAtomString();
+    }
+
+    /** Script that makes sitemap.xml addresses clickable and dates readable in browsers. */
+    public function sitemapScript(): Response
+    {
+        return response()
+            ->view('frontend.seo.sitemap-js', [], 200)
+            ->header('Content-Type', 'text/javascript; charset=UTF-8')
             ->header('Cache-Control', 'public, max-age=3600');
     }
 

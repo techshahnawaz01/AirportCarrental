@@ -26,4 +26,16 @@ class HtmlSanitizerTest extends TestCase
         $this->assertStringNotContainsString('javascript:', $html);
         $this->assertStringNotContainsString('evil.example', $html);
     }
+
+    public function test_trusted_map_embeds_lose_the_blocking_sandbox_and_extension_attributes(): void
+    {
+        $html = (new HtmlSanitizer)->clean(
+            '<p bis_size="{}"><iframe src="https://www.google.com/maps/embed?pb=!1m18" width="100%" height="500" sandbox="" allowfullscreen=""></iframe></p>'
+        );
+
+        $this->assertStringContainsString('<iframe src="https://www.google.com/maps/embed?pb=!1m18"', $html);
+        $this->assertStringContainsString('allowfullscreen', $html);
+        $this->assertStringNotContainsString('sandbox', $html);
+        $this->assertStringNotContainsString('bis_size', $html);
+    }
 }

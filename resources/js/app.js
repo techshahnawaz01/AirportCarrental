@@ -1,3 +1,6 @@
+// Let Vite version the self-hosted fonts so layouts can preload them via Vite::asset().
+import.meta.glob(['../fonts/**']);
+
 import { initAjaxForms } from './core/forms';
 import { initActions } from './core/actions';
 import { initModals } from './core/dialog';

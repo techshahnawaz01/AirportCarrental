@@ -1,0 +1,11 @@
+@import 'tailwindcss' source(none);
+@plugin '@tailwindcss/typography';
+@plugin '@tailwindcss/forms';
+
+/* Admin panel stylesheet: scans every view and script, since admin screens reuse the site components. */
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../views';
+@source '../js';
+@source '../../app/Shortcodes';
+
+@import './theme.css';

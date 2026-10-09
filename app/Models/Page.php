@@ -132,12 +132,16 @@ class Page extends Model
      */
     public function lastModified(): Carbon
     {
-        return $this->updated_at ?? $this->published_at ?? $this->created_at ?? now();
+        // A scheduled page changes for visitors when it goes live, which can be after its last edit.
+        $live = $this->published_at && ! $this->published_at->isFuture() ? $this->published_at : null;
+
+        return collect([$this->updated_at, $live])->filter()->max() ?? $this->created_at ?? now();
     }
 
     public function isPublished(): bool
     {
-        return $this->is_active && (! $this->published_at || $this->published_at->isPast());
+        // Same rule as scopePublished(): live from the publish moment itself.
+        return $this->is_active && (! $this->published_at || ! $this->published_at->isFuture());
     }
 
     public function typeLabel(): string
@@ -180,6 +184,23 @@ class Page extends Model
         }
 
         return $ancestors;
+    }
+
+    /**
+     * Visible breadcrumb trail (ancestors + this page). Labels come from the slug so they stay
+     * short, e.g. "delays-and-cancellations" → "Delays and cancellations".
+     *
+     * @return list<array{label: string, url?: string}>
+     */
+    public function breadcrumbs(): array
+    {
+        $label = fn (Page $page) => Str::ucfirst(str_replace('-', ' ', $page->slug ?: Str::slug($page->title)));
+
+        return $this->ancestors()
+            ->map(fn (Page $page) => ['label' => $label($page), 'url' => $page->url()])
+            ->push(['label' => $label($this)])
+            ->values()
+            ->all();
     }
 
     /**

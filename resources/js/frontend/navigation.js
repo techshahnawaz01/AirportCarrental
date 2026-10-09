@@ -45,10 +45,31 @@ export function initNavigation() {
     document.addEventListener('click', () => document.querySelectorAll('[data-dropdown-menu]').forEach((m) => (m.hidden = true)));
     document.addEventListener('keydown', (e) => e.key === 'Escape' && drawer && !drawer.hidden && setDrawer(false));
 
+    // Fade sections up as they scroll into view (styles in theme.css). Only sections that start
+    // below the fold are hidden, so the first screen never waits for this script.
+    const motionOk = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (motionOk && 'IntersectionObserver' in window) {
+        const observer = new IntersectionObserver(
+            (entries) =>
+                entries.forEach((entry) => {
+                    if (!entry.isIntersecting) return;
+                    entry.target.classList.remove('reveal-pending');
+                    observer.unobserve(entry.target);
+                }),
+            { rootMargin: '0px 0px -8% 0px' },
+        );
+        // Measure everything first, then write, to avoid forcing a layout per element.
+        const below = [...document.querySelectorAll('[data-reveal]')].filter((el) => el.getBoundingClientRect().top >= window.innerHeight);
+        below.forEach((el) => {
+            el.classList.add('reveal-pending');
+            observer.observe(el);
+        });
+    }
+
     // Header shadow once the page scrolls.
     const header = document.querySelector('[data-site-header]');
     if (header) {
-        const onScroll = () => header.classList.toggle('shadow-md', window.scrollY > 8);
+        const onScroll = () => header.classList.toggle('shadow-card', window.scrollY > 8);
         window.addEventListener('scroll', onScroll, { passive: true });
         onScroll();
     }

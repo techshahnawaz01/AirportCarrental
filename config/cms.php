@@ -109,6 +109,11 @@ return [
         'image_mimes' => ['jpg', 'jpeg', 'png', 'webp', 'gif'],
         // Longest edge in pixels. Larger uploads are downscaled when GD is available.
         'max_dimension' => 2400,
+        // Longest edge for logos and favicons (Settings → Branding); they never display larger.
+        'branding_max_dimension' => 480,
+        // Width of the smaller copy saved next to large images, served to phones via srcset.
+        'variant_width' => 960,
+        'variant_quality' => 72,
         'directory' => 'media',
     ],
 

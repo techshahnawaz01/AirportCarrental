@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Page;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -17,6 +18,22 @@ class PageService
         private readonly MediaService $media,
         private readonly ActivityLogger $activity,
     ) {}
+
+    /** A usable timezone name: the editor's (legacy aliases included) or else the site timezone. */
+    public static function timezone(?string $name): string
+    {
+        $fallback = (string) settings('general.timezone', config('app.timezone'));
+
+        if (blank($name)) {
+            return $fallback;
+        }
+
+        try {
+            return (new \DateTimeZone($name))->getName();
+        } catch (\Exception) {
+            return $fallback;
+        }
+    }
 
     public function save(Page $page, array $data, array $files = []): Page
     {
@@ -32,6 +49,14 @@ class PageService
             $data['content'] = $this->sanitizer->clean($data['content'] ?? null);
             $data['data'] = $this->templateData($data['template'], Arr::get($data, 'data', []), $page->data ?? []);
             $data['author_id'] ??= $page->author_id ?? auth()->id();
+
+            // The form shows and accepts times in the editor's own timezone (sent as client_timezone),
+            // falling back to the site timezone (Settings → General); they are stored in UTC.
+            $timezone = self::timezone($data['client_timezone'] ?? null);
+            unset($data['client_timezone']);
+            if (filled($data['published_at'] ?? null) && is_string($data['published_at'])) {
+                $data['published_at'] = Carbon::parse($data['published_at'], $timezone)->utc();
+            }
 
             if (($data['is_active'] ?? false) && empty($data['published_at']) && ! $page->published_at) {
                 $data['published_at'] = now();

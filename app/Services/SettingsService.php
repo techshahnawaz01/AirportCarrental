@@ -148,14 +148,26 @@ class SettingsService
             '--brand-background' => 'theme.background_color',
         ];
 
-        return collect($map)
+        $variables = collect($map)
             ->map(function ($key, $var) {
                 $value = (string) $this->get($key);
 
                 return preg_match('/^#[0-9a-fA-F]{6}$/', $value) ? "{$var}:{$value}" : null;
             })
-            ->filter()
-            ->implode(';');
+            ->filter();
+
+        // Text on accent-coloured buttons and badges: dark on light accents (yellow, lime…), white on dark ones.
+        $accent = (string) $this->get('theme.accent_color');
+        if (preg_match('/^#[0-9a-fA-F]{6}$/', $accent)) {
+            $light = self::luminance($accent) > 0.45;
+            $variables->push('--brand-on-accent:'.($light ? '#1a2332' : '#ffffff'));
+            if ($light) {
+                // A light accent is too pale for text on white; use a deep shade of it instead.
+                $variables->push('--brand-accent-ink:#'.implode('', array_map(fn ($pair) => sprintf('%02x', (int) round(hexdec($pair) * 0.45)), str_split(ltrim($accent, '#'), 2))));
+            }
+        }
+
+        return $variables->implode(';');
     }
 
     public function copyright(): string
@@ -164,5 +176,18 @@ class SettingsService
             '{year}' => now()->year,
             '{site}' => $this->get('branding.site_name'),
         ]);
+    }
+
+    /** WCAG relative luminance (0 = black, 1 = white) of a #rrggbb colour. */
+    public static function luminance(string $hex): float
+    {
+        $channel = function (int $value): float {
+            $c = $value / 255;
+
+            return $c <= 0.03928 ? $c / 12.92 : (($c + 0.055) / 1.055) ** 2.4;
+        };
+        [$r, $g, $b] = array_map(fn ($pair) => $channel(hexdec($pair)), str_split(ltrim($hex, '#'), 2));
+
+        return 0.2126 * $r + 0.7152 * $g + 0.0722 * $b;
     }
 }

@@ -3,7 +3,7 @@
 @section('content')
     <x-site.page-hero :page="$page" :subtitle="$page->excerpt" />
 
-    <div class="container-site grid gap-10 py-12 lg:grid-cols-12 lg:py-16">
+    <div class="container-site grid gap-10 py-12 lg:grid-cols-12 lg:gap-12 lg:py-20">
         <article class="min-w-0 lg:col-span-8">
             <div class="content-prose">{!! $content !!}</div>
 

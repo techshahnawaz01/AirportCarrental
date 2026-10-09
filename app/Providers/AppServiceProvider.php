@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Services\MenuService;
 use App\Services\SettingsService;
 use App\Support\FaqRegistry;
+use App\Support\Icons;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -25,6 +26,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(SettingsService::class);
         $this->app->singleton(MenuService::class);
         $this->app->scoped(FaqRegistry::class);
+        $this->app->scoped(Icons::class);
     }
 
     public function boot(): void
@@ -34,6 +36,8 @@ class AppServiceProvider extends ServiceProvider
         // Access control: every active staff account can use the admin; site-wide configuration is admin-only.
         Gate::define('access-admin', fn (User $user) => $user->is_active && array_key_exists($user->role, User::ROLES));
         Gate::define('manage-site', fn (User $user) => $user->is_active && $user->isAdmin());
+        // Everything except site configuration; authors are limited to their own posts.
+        Gate::define('manage-content', fn (User $user) => $user->is_active && $user->canManageAllContent());
 
         ResetPassword::createUrlUsing(fn ($user, string $token) => route('admin.password.reset', [
             'token' => $token,

@@ -9,7 +9,7 @@ import { toast } from '../core/toast';
  */
 let dialog;
 let resolver;
-let state = { page: 1, q: '', multiple: false, selected: new Map() };
+let state = { page: 1, q: '', multiple: false, selected: new Map(), alts: new Map() };
 
 function template() {
     const node = document.getElementById('media-picker-template');
@@ -48,9 +48,10 @@ function template() {
 
 function updateCount() {
     const button = dialog.querySelector('[data-picker-confirm]');
-    button.hidden = !state.multiple;
+    button.hidden = !state.multiple && state.selected.size === 0;
     button.disabled = state.selected.size === 0;
-    button.textContent = state.selected.size ? `Insert ${state.selected.size} selected` : 'Select images';
+    if (!state.multiple) button.textContent = 'Use this image';
+    else button.textContent = state.selected.size ? `Insert ${state.selected.size} selected` : 'Select images';
 }
 
 function tile(item) {
@@ -90,39 +91,88 @@ async function load(reset) {
 }
 
 async function upload(event) {
-    const files = [...event.target.files];
+    const input = event.target;
+    const files = [...input.files];
     if (!files.length) return;
+    // Only the label text changes: the file input (and its listener) must stay in place for the next upload.
     const label = dialog.querySelector('[data-picker-upload-label]');
     const original = label.innerHTML;
     label.innerHTML = '<span class="spinner"></span> Uploading…';
+    input.disabled = true;
     const body = new FormData();
     files.forEach((file) => body.append('files[]', file));
     try {
         const response = await request(dialog.dataset.uploadUrl, { method: 'POST', body });
         toast.success(response.message);
+        const items = response.data.items;
+        if (!state.multiple) state.selected.clear();
+        (state.multiple ? items : items.slice(0, 1)).forEach((item) => state.selected.set(item.id, item));
         const grid = dialog.querySelector('[data-picker-grid]');
         dialog.querySelector('[data-picker-empty]').hidden = true;
-        response.data.items.reverse().forEach((item) => grid.prepend(tile(item)));
-        if (!state.multiple && response.data.items.length === 1) finish(response.data.items);
+        grid.querySelectorAll('[aria-pressed="true"]').forEach((tile) => tile.setAttribute('aria-pressed', String(state.selected.has(JSON.parse(tile.dataset.item).id))));
+        [...items].reverse().forEach((item) => grid.prepend(tile(item)));
+        items.forEach(addAltRow);
+        updateCount();
+        dialog.querySelector('[data-picker-alt-list] input')?.focus();
     } catch (error) {
         toast.error(error.errors ? Object.values(error.errors).flat()[0] : error.message);
     } finally {
         label.innerHTML = original;
-        event.target.value = '';
+        input.disabled = false;
+        input.value = '';
     }
 }
 
-function finish(items) {
+/** Alt text input for a freshly uploaded image; saved when the picker is confirmed. */
+function addAltRow(item) {
+    if (state.alts.has(item.id)) return;
+    const row = document.createElement('label');
+    row.className = 'flex items-center gap-3';
+    row.innerHTML = '<img class="size-10 shrink-0 rounded-md border border-line object-cover" alt=""><input type="text" maxlength="255" class="form-control py-1.5 text-sm">';
+    row.querySelector('img').src = item.url;
+    const input = row.querySelector('input');
+    input.value = item.alt || '';
+    input.placeholder = 'Alt text';
+    input.setAttribute('aria-label', `Alt text for ${item.name}`);
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            dialog.querySelector('[data-picker-confirm]').click();
+        }
+    });
+    dialog.querySelector('[data-picker-alt-list]').appendChild(row);
+    dialog.querySelector('[data-picker-alts]').hidden = false;
+    state.alts.set(item.id, { item, input });
+}
+
+/** Saves edited alt texts to the media library and returns the items with their new alt. */
+async function saveAlts(items) {
+    const changed = [...state.alts.values()].filter(({ item, input }) => input.value.trim() !== (item.alt || ''));
+    await Promise.all(changed.map(async ({ item, input }) => {
+        try {
+            await request(`${dialog.dataset.uploadUrl}/${item.id}`, { method: 'PUT', body: { alt: input.value.trim() } });
+            item.alt = input.value.trim();
+        } catch (error) {
+            toast.error(error.message);
+        }
+    }));
+    return items.map((item) => (state.alts.has(item.id) ? { ...item, alt: state.alts.get(item.id).item.alt } : item));
+}
+
+async function finish(items) {
     const resolve = resolver;
     resolver = null;
+    items = await saveAlts(items);
     dialog.close();
     resolve?.(items);
 }
 
 export function pickMedia({ multiple = false } = {}) {
     if (!dialog) template();
-    state = { page: 1, q: '', multiple, selected: new Map() };
+    state = { page: 1, q: '', multiple, selected: new Map(), alts: new Map() };
     dialog.querySelector('[data-picker-search]').value = '';
+    dialog.querySelector('[data-picker-alt-list]').innerHTML = '';
+    dialog.querySelector('[data-picker-alts]').hidden = true;
     updateCount();
     load(true);
     dialog.showModal();

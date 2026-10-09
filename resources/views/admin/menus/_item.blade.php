@@ -16,7 +16,7 @@
         @endunless
         <button type="button" class="btn-icon size-8" aria-label="Edit" data-edit-item="{{ json_encode([
             'id' => $item->id, 'label' => $item->label, 'url' => $item->url, 'page_id' => $item->page_id, 'parent_id' => $item->parent_id,
-            'icon' => $item->icon, 'description' => $item->description, 'image_id' => $item->image_id, 'image_url' => $item->image?->url,
+            'icon' => $item->icon, 'description' => $item->description, 'image_id' => $item->image_id, 'image_url' => $item->image?->url, 'image_alt' => $item->image?->alt,
             'open_in_new_tab' => $item->open_in_new_tab, 'is_active' => $item->is_active,
             'update_url' => route('admin.menus.items.update', [$item->menu_id, $item->id]),
         ]) }}"><x-icon name="pencil" class="size-4" /></button>

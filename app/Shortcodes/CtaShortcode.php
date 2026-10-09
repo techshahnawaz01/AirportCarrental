@@ -11,6 +11,7 @@ class CtaShortcode implements Shortcode
     {
         return view('frontend.shortcodes.cta', [
             'title' => $attributes['title'] ?? '',
+            'heading' => in_array($attributes['heading'] ?? 'h2', ['h2', 'h3', 'h4'], true) ? ($attributes['heading'] ?? 'h2') : 'h2',
             'text' => $attributes['text'] ?? strip_tags((string) $content),
             'button' => $attributes['button'] ?? null,
             'url' => $attributes['url'] ?? null,

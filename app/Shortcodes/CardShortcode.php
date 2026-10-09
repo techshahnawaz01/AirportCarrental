@@ -9,7 +9,7 @@ class CardShortcode implements Shortcode
 {
     public function render(array $attributes, ?string $content, ?Page $page): string
     {
-        $phone = settings('contact.phone');
+        $phone = site_phone();
 
         return view('frontend.shortcodes.card', [
             'title' => $attributes['title'] ?? '',

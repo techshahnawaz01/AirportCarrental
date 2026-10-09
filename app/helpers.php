@@ -29,6 +29,19 @@ if (! function_exists('local_date')) {
     }
 }
 
+if (! function_exists('site_phone')) {
+    /**
+     * The public call number from Settings → Contact (falling back to Settings → General).
+     * Null when neither is filled in, so every call button, bar and link stays hidden.
+     */
+    function site_phone(): ?string
+    {
+        $phone = trim((string) settings('contact.phone')) ?: trim((string) settings('general.phone'));
+
+        return $phone !== '' ? $phone : null;
+    }
+}
+
 if (! function_exists('tel_href')) {
     function tel_href(?string $phone): string
     {
